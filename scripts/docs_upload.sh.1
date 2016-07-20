@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set +x
+set +v
+set -u
+set -e
+
+function do_upload()
+{
+    arch=$1
+    dst=$2
+    if [ -f "$arch" ] ; then
+        echo "$arch ==> $dst"
+
+        #
+        # TODO: Add here upload commands
+        #
+        echo "WARNING: Documentation upload is not available"
+
+        echo "Done!"
+    else
+        echo "File not found: $arch"
+    fi
+}
+
+echo "===================="
+
+if [ "$1" == "2.4" ] ; then
+    echo "=== Uploading 2.4 Sphinx docs..."
+    do_upload doc_sphinx.zip 2.4
+
+    echo "=== Uploading 2.4 Doxygen docs..."
+    do_upload doc_doxygen.zip ref/2.4
+fi
+
+if [ "$1" == "master" ] ; then
+    echo "=== Uploading MASTER Doxygen docs..."
+    do_upload doc_doxygen.zip ref/master
+fi

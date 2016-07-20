@@ -1,0 +1,15 @@
+*.pyc
+*.log
+*.log.*
+*.sqlite*
+twistd.*
+*#*
+*.save
+pysrc
+.create.sh*
+credentials
+config/master.cfg.sample
+config/public_html/default.css.new
+config/public_html/robots.txt.new
+config/devices.py
+scripts/docs_upload.sh

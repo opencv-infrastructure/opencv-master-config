@@ -1,0 +1,12 @@
+[submodule "pullrequest"]
+	path = config/pullrequest
+	url = ../common-pullrequest-plugin.git
+	branch = master
+[submodule "pullrequest_ui"]
+	path = config/pullrequest_ui
+	url = ../common-pullrequest-ui.git
+	branch = dist/master
+[submodule "buildbot"]
+	path = buildbot
+	url = ../common-buildbot.git
+	branch = ocv_master

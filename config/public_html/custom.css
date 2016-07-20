@@ -1,0 +1,17 @@
+#themenu {
+    margin: 3px 1px 3px 1px;
+}
+
+#themenu ul {
+    display: inline;
+    padding: 3px;
+}
+
+#themenu ul li {
+    display: inline;
+    padding: 3px;
+}
+
+#first {
+    font-weight: bold;
+}

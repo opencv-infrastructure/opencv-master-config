@@ -1,0 +1,9 @@
+*.pyc
+*.log
+*.log.*
+*.sqlite*
+twistd.*
+*#*
+*.save
+
+buildbot_passwords.py

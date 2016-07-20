@@ -1,0 +1,118 @@
+{%- block doctype -%}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{% endblock %}
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    {% block head %}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {% if metatags %}
+      {{ metatags }}
+    {% endif %}
+    {% if refresh %}
+      <meta http-equiv="refresh" content="{{ refresh|e }}"/>
+    {% endif %}
+    <title>{{ pageTitle|e }}</title>
+    <link rel="stylesheet" href="{{ stylesheet }}" type="text/css" />
+    <link rel="stylesheet" href="{{ path_to_root }}custom.css" type="text/css" />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ path_to_root }}rss">
+    <link rel="shortcut icon" href="{{ path_to_root }}favicon.ico">
+    {% endblock %}
+  </head>
+  <body class="interface">
+    {% block header -%}
+    <div class="header">
+     <div>
+        <a href="{{ path_to_root or '.' }}">Home</a>
+        {% if authz.advertiseAction('view', request) %}
+        -
+        <a href="{{ path_to_root }}builders">Builders</a>
+        <a href="{{ path_to_root }}one_line_per_build">Recent Builds</a>
+        <a href="{{ path_to_root }}buildslaves">Buildslaves</a>
+        <a href="{{ path_to_root }}waterfall">Waterfall</a>
+
+
+        <div id="themenu">
+        <span id="first">Pull requests:</span>
+        <ul>
+        <li><a href="/#/summary/opencv">opencv</a></li>
+        <li><a href="/#/summary/contrib">opencv_contrib</a></li>
+        </ul>
+        </div>
+
+        <div id="themenu">
+        <span id="first">Precommit:</span>
+        <ul id="hor">
+        <li><a href="{{ path_to_root }}waterfall?tag=precommit-main">opencv</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=precommit-contrib">opencv_contrib</a></li>
+        </ul>
+        </div>
+
+        <div id="themenu">
+        <span id="first">Nightly builds:</span>
+        <ul>
+        <li><a href="{{ path_to_root }}waterfall?tag=scheduled-master">master</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=scheduled-master-contrib">master+contrib</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=scheduled-2.4">2.4</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=scheduled">all</a></li>
+        </ul>
+        </div>
+
+        <div id="themenu">
+        <span id="first">Misc:</span>
+        <ul>
+        <li><a href="{{ path_to_root }}waterfall?tag=docs">docs</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=android_pack">android pack</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=ios_pack">ios pack</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=platform-broadwell">broadwell</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=arm">arm</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=valgrind">valgrind</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=coverage">coverage</a></li>
+        </ul>
+        </div>
+
+        {% endif %}
+     </div>
+     {% if authz.authenticated(request) %}
+     <div class="auth">
+     {{ authz.getUsernameHTML(request) }}
+     |<a href="{{ path_to_root }}logout">Logout</a>
+     </div>
+     {% endif %}
+    </div>
+    {% endblock %}
+
+    {%- block barecontent -%}
+    <hr/>
+
+    {% if alert_msg != "" %}
+    <div class="alert">
+    {{ alert_msg }}
+    </div>
+    {% endif %}
+
+    <div class="content">
+      {%- block content -%}
+      {%- endblock -%}
+    </div>
+    {%- endblock -%}
+
+    {%- block footer -%}
+    <div class="footer" style="clear:both">
+      <hr/>
+      <a href="http://buildbot.net/">BuildBot</a> ({{version}})
+      {% if title -%}
+        working for the&nbsp;
+        {%- if title_url -%}
+          <a href="{{ title_url }}">{{ title }}</a>
+        {%- else -%}
+          {{ title }}
+        {%- endif -%}
+        &nbsp;project.
+      {%- endif -%}
+      <br/>
+      Page built: <b>{{ time }}</b> ({{ tz }})
+    </div>
+    {% endblock -%}
+  </body>
+</html>
