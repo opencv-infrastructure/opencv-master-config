@@ -41,20 +41,34 @@
         </div>
 
         <div id="themenu">
-        <span id="first">Precommit:</span>
+        <span id="first">Precommit / waterfall:</span>
         <ul id="hor">
         <li><a href="{{ path_to_root }}waterfall?tag=precommit-main">opencv</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=precommit-contrib">opencv_contrib</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=precommit">all</a></li>
+        </ul>
+        <span id="first">Precommit / grid:</span>
+        <ul id="hor">
+        <li><a href="{{ path_to_root }}grid?tag=precommit-main&width=7">opencv</a></li>
+        <li><a href="{{ path_to_root }}grid?tag=precommit-contrib&width=7">opencv_contrib</a></li>
+        <li><a href="{{ path_to_root }}grid?tag=precommit&width=7">all</a></li>
         </ul>
         </div>
 
         <div id="themenu">
-        <span id="first">Nightly builds:</span>
+        <span id="first">Nightly builds / waterfall:</span>
         <ul>
         <li><a href="{{ path_to_root }}waterfall?tag=scheduled-master">master</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=scheduled-master-contrib">master+contrib</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=scheduled-2.4">2.4</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=scheduled">all</a></li>
+        </ul>
+        <span id="first">Nightly builds / grid:</span>
+        <ul>
+        <li><a href="{{ path_to_root }}grid?tag=scheduled-master">master</a></li>
+        <li><a href="{{ path_to_root }}grid?tag=scheduled-master-contrib">master+contrib</a></li>
+        <li><a href="{{ path_to_root }}grid?tag=scheduled-2.4">2.4</a></li>
+        <li><a href="{{ path_to_root }}grid?tag=scheduled">all</a></li>
         </ul>
         </div>
 
@@ -64,7 +78,9 @@
         <li><a href="{{ path_to_root }}waterfall?tag=docs">docs</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=android_pack">android pack</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=ios_pack">ios pack</a></li>
-        <li><a href="{{ path_to_root }}waterfall?tag=platform-broadwell">broadwell</a></li>
+        <li><a href="{{ path_to_root }}waterfall?tag=pack-master">win pack</a>
+          (<a href="{{ path_to_root }}waterfall?tag=pack-2.4">2.4</a>)
+        </li>
         <li><a href="{{ path_to_root }}waterfall?tag=arm">arm</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=valgrind">valgrind</a></li>
         <li><a href="{{ path_to_root }}waterfall?tag=coverage">coverage</a></li>

@@ -1,20 +1,18 @@
 slave = {  # buildslave passwords are stored in the other place
-    'linux-slave-x64' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
-    'linux-slave-x64-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
-    'linux-slave-x64-3' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
-    'windows-slave-x64-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'windows-slave-x64-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'windows-slave-x64-intel' : { 'max_builds' : 4, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'macosx-slave' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'macosx-slave-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'macosx-slave-3' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+    'linux-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
+    'linux-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
+    'windows-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+    'windows-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+    'macosx-1' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+    'macosx-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+
+    'windows-pack' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 1, 'parallel_tests' : 1 } },
 }
 
 PLATFORM_DEFAULT = 'default'
-PLATFORM_INTEL = 'broadwell'
 
 # Git mirror repository
-URL_GIT_BASE = r'git://code.ocv/'
+URL_GIT_BASE = r'git://code.ocv/opencv/'
 URL_OPENCV = URL_GIT_BASE + r'opencv.git'
 URL_OPENCV_EXT = URL_GIT_BASE + r'opencv_extra.git'
 URL_OPENCV_CONTRIB = URL_GIT_BASE + r'opencv_contrib.git'

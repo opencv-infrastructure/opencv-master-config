@@ -5,7 +5,7 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import MakeDirectory
 
 from factory_common import CommonFactory
-from build_utils import OSType
+from build_utils import OSType, isBranch24
 
 
 
@@ -21,17 +21,23 @@ class AndroidPackFactory(CommonFactory):
 
     @defer.inlineCallbacks
     def run_build_script(self):
+        extra_opts = '' if isBranch24(self) else ' --extra_pack 2.4.13:/opt/android/pack_2.4/'
+        env = self.env.copy()
+        if isBranch24(self):
+            env['ANDROID_NDK'] = '/opt/android/android-ndk-r8e'
         step = \
             ShellCommand(
                 name="build sdk",
-                command=self.envCmd + ' python ../opencv/platforms/android/build_sdk.py --build_doc --extra_pack 2.4.11:/opt/android/pack_2.4/ . ../opencv',
+                command=self.envCmd + ' python ../' + self.SRC_OPENCV + '/platforms/android/build_sdk.py --build_doc' + extra_opts + ' . ../' + self.SRC_OPENCV,
                 workdir='build',
-                env=self.env)
+                env=env)
         yield self.processStep(step)
 
 
     @defer.inlineCallbacks
     def run_test_scripts(self):
+        if isBranch24(self):
+            return
         step = \
             ShellCommand(
                 name="test cmake",

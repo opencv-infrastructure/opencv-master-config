@@ -52,7 +52,7 @@ def getDocUploadScript():
     return '/app/scripts/docs_upload.sh'
 
 def getUploadPathTemplate():
-    return 'opencv_releases/%(prop:buildername)s/%(prop:timestamp)s_%(prop:buildnumber)s'
+    return 'opencv_releases/%(prop:buildername)s/%(prop:timestamp)s--%(prop:buildnumber)s'
 
 @defer.inlineCallbacks
 def interpolateParameter(value, props):
@@ -63,9 +63,10 @@ def interpolateParameter(value, props):
 def getDropRoot(masterPath=True):
     return '' if not masterPath else '/data/artifacts/'
 
-def getDirectoryForExport(forUrl=False):
-    if forUrl:
-        return 'export/'
+def getExportURL():
+    return 'export/'
+
+def getExportDirectory():
     return getDropRoot() + 'export/'
 
 def _getMergeNeededFn(codebase):

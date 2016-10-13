@@ -32,13 +32,13 @@ class GitHubContext(pullrequest.context.Context):
 
     builders = dict(
         linux=dict(name='Linux x64', builders=['precommit_linux64'], order=10),
-        windows=dict(name='Win7 x64 VS2013', builders=['precommit_windows64'], order=20),
-        windows10=dict(name='Win10 x64 VS2015', builders=['precommit_windows_ten'], order=25),
+        ocllinux=dict(name='Linux OpenCL', builders=['precommit_opencl_linux'], order=11),
+        windows=dict(name='Win64', builders=['precommit_windows64'], order=20),
+        ocl=dict(name='Win64 OpenCL', builders=['precommit_opencl'], order=21),
         macosx=dict(name='Mac', builders=['precommit_macosx'], order=30),
+        oclmacosx=dict(name='Mac OpenCL', builders=['precommit_opencl_macosx'], order=31),
         android=dict(name='Android armeabi-v7a', builders=['precommit_android'], order=40),
-        ocl=dict(name='OpenCL', builders=['precommit_opencl'], order=50),
-        oclIntel=dict(name='OpenCL Intel', builders=['precommit_opencl-intel'], order=55),
-        linuxNoOpt=dict(name='Linux x64 Debug', builders=['precommit_linux64_no_opt'], order=80),
+        linuxNoOpt=dict(name='Linux x64 Debug', builders=['precommit_linux64_no_opt'], order=50),
         docs=dict(name='Docs', builders=['precommit_docs'], order=90),
         ios=dict(name='iOS', builders=['precommit_ios'], order=100),
 
@@ -47,6 +47,11 @@ class GitHubContext(pullrequest.context.Context):
         armv7=dict(name='ARMv7', builders=['precommit_armv7'], order=1200),
         armv8=dict(name='ARMv8', builders=['precommit_armv8'], order=1300),
         android_pack=dict(name='Android pack', builders=['precommit_pack_android'], order=10040),
+
+        linux_icc=dict(name='Linux x64 Intel Compiler', builders=['precommit_linux64-icc'], order=50010),
+        windows_icc=dict(name='Win64 Intel Compiler', builders=['precommit_windows64-icc'], order=50020),
+
+        cuda=dict(name='CUDA', builders=['precommit_cuda_linux64'], order=100000),
     )
 
     username = 'opencv'
@@ -87,18 +92,21 @@ class GitHubContext(pullrequest.context.Context):
         raise Exception('invalid status', self.client.status)
 
     def getListOfAutomaticBuilders(self, pr):
+        if self.isBadBranch(pr):
+            return []
         if self.isWIP(pr) or os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
         buildersList = [
             'linux',
+            'ocllinux',
             'windows',
+            'ocl',
             'macosx',
+            'oclmacosx',
             'android',
             'docs',
-            'ocl',
             'linuxNoOpt',
             'ios',
-            'windows10'
         ]
         return buildersList
 
@@ -159,6 +167,8 @@ class GitHubContext(pullrequest.context.Context):
             self.pushBuildProperty(properties, pr.description, 'test[s]?_filter[s]?', 'test_filter')
             self.pushBuildProperty(properties, pr.description, 'build_examples', 'build_examples')
 
+        self.pushBuildProperty(properties, pr.description, 'docker_image-' + re.escape(b.name), 'docker_image')
+
         sourcestamps.append(dict(
             codebase='opencv',
             #repository='https://github.com/%s/%s.git' % (self.username, self.repo),
@@ -209,24 +219,27 @@ class GitHubContext(pullrequest.context.Context):
     def _updateGitHubStatus(self, prid):
         if self.githubStatusAccessToken is None:
             return
-        if hasattr(self, 'statusRepoId'):
-            pr = yield self.db.prcc.getPullRequest(prid)
+        try:
+            if hasattr(self, 'statusRepoId'):
+                pr = yield self.db.prcc.getPullRequest(prid)
+        
+                c = JSONClient("http://master.ocv/api", userAgent=userAgent)
+                res = yield c.queryFast.get(prId=prid, repoId=self.statusRepoId)
 
-            c = JSONClient("http://master.ocv/api", userAgent=userAgent)
-            res = yield c.queryFast.get(prId=prid, repoId=self.statusRepoId)
-
-            status = 'failure'
-            if res:
-                msg = res['messageFast']
-                if 'passed' in msg:
-                    status = 'success'
-                elif 'Unsuccessful build' in msg:
-                    status = 'error'
-                elif 'Waiting' in msg:
-                    status = 'pending'
-                gh = GitHub(userAgent=userAgent, access_token=self.githubStatusAccessToken)
-                upd = GitHubCommitStatus(gh, self.username, self.repo)
-                res = yield upd.updateCommit(pr.head_sha, status, msg, self.statusUrl)
+                status = 'failure'
+                if res:
+                    msg = res['messageFast']
+                    if 'passed' in msg:
+                        status = 'success'
+                    elif 'Unsuccessful build' in msg:
+                        status = 'error'
+                    elif 'Waiting' in msg:
+                        status = 'pending'
+                    gh = GitHub(userAgent=userAgent, access_token=self.githubStatusAccessToken)
+                    upd = GitHubCommitStatus(gh, self.username, self.repo)
+                    res = yield upd.updateCommit(pr.head_sha, status, msg, self.statusUrl)
+        except:
+            pass
 
     def onUpdatePullRequest(self, prid):
         task.deferLater(reactor, 30, self._updateGitHubStatus, prid)

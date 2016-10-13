@@ -1,6 +1,8 @@
 #!/bin/bash
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
+DOCKER=${DOCKER:-docker} # DOCKER="sudo docker" ./deploy.sh
+
 IMAGE=${IMAGE:-buildbot_image}
 CONTAINER=${CONTAINER:-buildbot}
 
@@ -94,8 +96,16 @@ else
 fi
 
 # Docker image
-docker build -t ${IMAGE} deploy/production
-#docker build -t ${IMAGE} deploy/development
+#if [ -n "$HTTP_PROXY" ]; then
+#  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTP_PROXY=$HTTP_PROXY"
+#  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg http_proxy=$HTTP_PROXY"
+#fi
+if [ -n "$HTTPS_PROXY" ]; then
+  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTPS_PROXY=$HTTPS_PROXY"
+  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg https_proxy=$HTTPS_PROXY"
+fi
+$DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/production
+#$DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/development
 
 
 cat <<EOF

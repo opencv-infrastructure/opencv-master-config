@@ -40,7 +40,8 @@ class Docs_factory(BaseFactory):
 
     def __init__(self, *args, **kwargs):
         useName = kwargs.pop('useName', 'docs')
-        BaseFactory.__init__(self, *args, useName=useName, buildDocs=True, ** kwargs)
+        dockerImage = kwargs.pop('dockerImage', (None, 'docs'))
+        BaseFactory.__init__(self, *args, useName=useName, buildDocs=True, runTests=False, dockerImage=dockerImage, **kwargs)
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
@@ -64,7 +65,6 @@ class Docs_factory(BaseFactory):
             if self.isContrib:
                 yield self.check_whitespaces('opencv_contrib')
 
-        if self.isPrecommit:
             yield self.check_size('opencv')
             yield self.check_size('opencv_extra')
             if self.isContrib:
@@ -74,6 +74,9 @@ class Docs_factory(BaseFactory):
         if isBranch24(self):
             yield self.compile(target='docs', desc='make pdf')
         yield self.compile(target='doxygen', desc='make doxygen', suppressionFile="../%s/doc/disabled_doc_warnings.txt" % self.SRC_OPENCV)
+
+    @defer.inlineCallbacks
+    def after_tests_steps(self):
         if not self.isPrecommit:
             # only 2.4 branch have separate 'html' docs
             if self.branch == '2.4':
@@ -83,17 +86,17 @@ class Docs_factory(BaseFactory):
             yield self.upload_release()
             # upload to docs.opencv.org
             if self.shouldUpload():
-                yield self.upload()
+                yield self.upload_docs()
         else:
             targetPath = 'pr' if not self.isContrib else 'pr_contrib'
             targetPath = os.path.join(targetPath, str(self.getProperty('pullrequest', default='latest')))
             targetPath = os.path.join(targetPath, 'docs')
-            targetDirectory = os.path.join(getDirectoryForExport(), targetPath)
+            targetDirectory = os.path.join(getExportDirectory(), targetPath)
             if os.path.exists(targetDirectory):
                 step = \
                     MasterShellCommand(
                         name='cleanup previous docs dir', description='', descriptionDone='',
-                        path=getDirectoryForExport(),
+                        path=getExportDirectory(),
                         command='rm -rf %s' % (targetDirectory),
                         env={},
                         hideStepIf=hideStepIfSuccessSkipFn)
@@ -108,13 +111,13 @@ class Docs_factory(BaseFactory):
             yield step.addURL('preview', 'export/' + targetPath)
 
     @defer.inlineCallbacks
-    def upload(self):
+    def upload_docs(self):
         path = getUploadPathTemplate()
         desc = 'upload'
         step = \
             MasterShellCommand(
                 name = desc, description = desc, descriptionDone = desc,
-                path = Interpolate(getDirectoryForExport() + path),
+                path = Interpolate(getExportDirectory() + path),
                 env = {},
                 command=[getDocUploadScript(), self.branch])
         yield self.processStep(step)

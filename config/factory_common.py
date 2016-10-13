@@ -24,7 +24,9 @@ from command_test_py import CommandTestPy
 from builder_newstyle import BuilderNewStyle
 
 from build_utils import *
-from constants import PLATFORM_DEFAULT, PLATFORM_INTEL
+from constants import PLATFORM_DEFAULT
+
+from buildprops_observer import BuildPropertiesObserver
 
 # for separate 'python2' and 'pyhton3' tests
 def isPythonTest(t):
@@ -105,6 +107,7 @@ class CommonFactory(BuilderNewStyle):
         self.useAVX = kwargs.pop('useAVX', None)
         self.isDebug = kwargs.pop('isDebug', False)
         self.runPython = kwargs.pop('runPython', self.osType != OSType.ANDROID and not (self.isDebug and self.osType == OSType.WINDOWS))
+        self.runTests = kwargs.pop('runTests', True)
         self.isPrecommit = kwargs.pop('isPrecommit', False)
         self.isPerf = kwargs.pop('isPerf', False)
         self.buildWithContrib = kwargs.pop('buildWithContrib', self.branch != '2.4') # Build with opencv_contrib
@@ -113,30 +116,37 @@ class CommonFactory(BuilderNewStyle):
         self.env = kwargs.pop('env', {}).copy()
         assert type(self.env) is dict
         self.cmake_generator = kwargs.pop('cmake_generator', None)
+        self.cmake_toolset = kwargs.pop('cmake_toolset', None) # (builder suffix, toolset value)
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
+        if self.osType == OSType.LINUX:
+            self.dockerImage = kwargs.pop('dockerImage', (None, 'ubuntu:14.04'))
+        elif self.osType == OSType.ANDROID:
+            self.dockerImage = kwargs.pop('dockerImage', (None, 'android:14.04'))
+        else:
+            assert kwargs.pop('dockerImage', None) is None
+            self.dockerImage = None
 
         BuilderNewStyle.__init__(self, **kwargs)
 
         if self.useSlave is None:
             if self.platform == PLATFORM_DEFAULT:
-                if self.osType == OSType.LINUX:
+                if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
                     if self.is64 is None or self.is64:
-                        self.useSlave = ['linux-slave-x64']
+                        self.useSlave = ['linux-1']
                         if self.isPrecommit:
-                            self.useSlave = ['linux-slave-x64-2', 'linux-slave-x64']
+                            self.useSlave = ['linux-1', 'linux-2']
                 elif self.osType == OSType.WINDOWS:
-                    self.useSlave = ['windows-slave-x64-1', 'windows-slave-x64-2']
-                elif self.osType == OSType.MACOSX or self.osType == OSType.ANDROID:
-                    self.useSlave = ['macosx-slave']
+                    self.useSlave = ['windows-1', 'windows-2']
+                elif self.osType == OSType.MACOSX:
+                    self.useSlave = ['macosx-1']
                     if self.isPrecommit:
-                        self.useSlave = ['macosx-slave-2', 'macosx-slave']
-            elif self.platform == PLATFORM_INTEL:
-                if self.osType == OSType.WINDOWS:
-                    self.useSlave = ['windows-slave-x64-intel']
+                        self.useSlave = ['macosx-1', 'macosx-2']
 
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
+        else:
+            self.cmakepars['ENABLE_CCACHE'] = 'OFF'
 
 
     def onNewBuild(self):
@@ -149,6 +159,12 @@ class CommonFactory(BuilderNewStyle):
                 self.SRC_OPENCV = prefix + '/' + self.SRC_OPENCV
                 self.SRC_OPENCV_EXT = prefix + '/' + self.SRC_OPENCV_EXT
                 self.SRC_OPENCV_CONTRIB = prefix + '/' + self.SRC_OPENCV_CONTRIB
+        dockerImage = self.bb_requests[0].properties.getProperty('docker_image', default=None)
+        if dockerImage:
+            self.dockerImage = (None, dockerImage)
+        if self.dockerImage:
+            dockerImageName = self.dockerImage[1] if isinstance(self.dockerImage, (list, tuple)) else self.dockerImage
+            self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', dockerImageName))
 
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))
@@ -206,9 +222,9 @@ class CommonFactory(BuilderNewStyle):
         - gpu: not tested yet
         '''
         if isBranch24(self):
-            return ["gpu", "java"]
+            return ["gpu"]
         else:
-            return ["java", "tracking", "dnn", "viz", "shape", "rgbd", "stereo"]
+            return ["tracking", "dnn", "viz", "shape", "rgbd", "stereo"]
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''
@@ -233,8 +249,11 @@ class CommonFactory(BuilderNewStyle):
         yield self.cleanup_builddir()
         yield self.checkout_sources()
         yield self.build()
-        yield self.determineTests()
-        yield self.testAll()
+        yield self.after_build_steps()
+        if self.runTests and bool(self.getProperty('ci-run_tests', default=True)):
+            yield self.determineTests()
+            yield self.testAll()
+        yield self.after_tests_steps()
         if self.bb_build.result == SUCCESS and self.isPrecommit != True:
             yield self.cleanup_builddir()
 
@@ -242,7 +261,13 @@ class CommonFactory(BuilderNewStyle):
     @defer.inlineCallbacks
     def runCleanup(self):
         # TODO Forced cleanup: yield self.cleanup_builddir()
-        yield None
+        env = self.env.copy()
+        env['BUILD_CLEANUP'] = '1'
+        step = ShellCommand(name='cleanup', descriptionDone=' ', description=' ',
+                command=self.envCmd + 'echo Cleanup', env=env, workdir='.',
+                alwaysRun=False) # skip cleanup on failures for debug purposes
+        if self.bb_build.result == SUCCESS and self.isPrecommit != True:
+            yield self.processStep(step)
 
 
     def getName(self):  # derived classes should implement only name() method
@@ -285,7 +310,7 @@ class CommonFactory(BuilderNewStyle):
         if self.osType != OSType.ANDROID:
             if self.compiler is None:
                 if self.osType == OSType.WINDOWS:
-                    self.compiler = WinCompiler.VC12
+                    self.compiler = WinCompiler.VC14
 
             if (not 'BUILD_ARCH' in self.env) and (self.is64 is not None):
                 if self.is64:
@@ -311,21 +336,23 @@ class CommonFactory(BuilderNewStyle):
         step = ShellCommand(name='init', descriptionDone=' ', description=' ',
                 command=self.envCmd + 'echo Initialize', env=env, workdir='.',
                 haltOnFailure=True)
+        step.addLogObserver('stdio', BuildPropertiesObserver(self))
         yield self.processStep(step)
 
 
     @defer.inlineCallbacks
-    def checkout_sources(self):
+    def checkout_sources(self, process_extra=True, process_contrib=True):
         getDescriptionOptions = {
              'always': True
         }
         step = Git(name='Fetch opencv', repourl=Interpolate('%(src:opencv:repository)s'), workdir=self.SRC_OPENCV,
             haltOnFailure=True, codebase='opencv', getDescription=getDescriptionOptions, mode='full', method='clean')
         yield self.processStep(step)
-        step = Git(name='Fetch extra', repourl=Interpolate('%(src:opencv_extra:repository)s'), workdir=self.SRC_OPENCV_EXT,
-            haltOnFailure=True, codebase='opencv_extra', getDescription=getDescriptionOptions, mode='full', method='clean')
-        yield self.processStep(step)
-        if self.buildWithContrib:
+        if process_extra:
+            step = Git(name='Fetch extra', repourl=Interpolate('%(src:opencv_extra:repository)s'), workdir=self.SRC_OPENCV_EXT,
+                haltOnFailure=True, codebase='opencv_extra', getDescription=getDescriptionOptions, mode='full', method='clean')
+            yield self.processStep(step)
+        if process_contrib and self.buildWithContrib:
             step = Git(name='Fetch opencv_contrib', repourl=Interpolate('%(src:opencv_contrib:repository)s'), workdir=self.SRC_OPENCV_CONTRIB,
                 haltOnFailure=True, codebase='opencv_contrib', getDescription=getDescriptionOptions, mode='full', method='clean')
             yield self.processStep(step)
@@ -333,15 +360,20 @@ class CommonFactory(BuilderNewStyle):
         if self.isPrecommit:
             step = getMergeCommand('opencv', self.SRC_OPENCV)
             yield self.processStep(step)
-            step = getMergeCommand('opencv_extra', self.SRC_OPENCV_EXT)
-            yield self.processStep(step)
-            if self.buildWithContrib:
+            if process_extra:
+                step = getMergeCommand('opencv_extra', self.SRC_OPENCV_EXT)
+                yield self.processStep(step)
+            if process_contrib and self.buildWithContrib:
                 step = getMergeCommand('opencv_contrib', self.SRC_OPENCV_CONTRIB)
                 yield self.processStep(step)
 
 
     @defer.inlineCallbacks
     def cleanup_builddir(self):
+        step = RemoveDirectory(
+            dir='install', hideStepIf=lambda result, s: result == SUCCESS,
+            haltOnFailure=True)
+        yield self.processStep(step)
         step = RemoveDirectory(
             dir='build', hideStepIf=lambda result, s: result == SUCCESS,
             haltOnFailure=True)
@@ -403,10 +435,14 @@ class CommonFactory(BuilderNewStyle):
         if self.osType == OSType.LINUX and not isBranch24(self):
             self.cmakepars['WITH_OPENNI2'] = 'ON'
             self.cmakepars['WITH_GDAL'] = 'ON'
-            self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3.4'
+            self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3'
+            self.cmakepars['WITH_GDCM'] = 'ON'
 
         if self.buildWithContrib:
             self.cmakepars['OPENCV_EXTRA_MODULES_PATH'] = self.getProperty('workdir') + '/' + self.SRC_OPENCV_CONTRIB + '/modules'
+
+        if self.isPrecommit and not isBranch24(self):
+            self.cmakepars['OPENCV_ENABLE_NONFREE'] = 'ON'
 
 
     @defer.inlineCallbacks
@@ -427,6 +463,8 @@ class CommonFactory(BuilderNewStyle):
             command = self.envCmd + 'cmake'
             if self.cmake_generator:
                 command += ' -G%s' % self.cmake_generator
+            if self.cmake_toolset:
+                command += ' -T%s' % self.cmake_toolset[1]
             command += ' %s %s' % (cmakepars, cmakedir)
             defer.returnValue(command)
 
@@ -439,7 +477,7 @@ class CommonFactory(BuilderNewStyle):
 
 
     @defer.inlineCallbacks
-    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True, warningPattern=None, suppressionFile=None):
+    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True, warningPattern=None, suppressionFile=None, runParallel=True):
         @renderer
         def compileCommand(props):
             command = '%s cmake --build . --config %s' % (self.envCmd, config)
@@ -447,15 +485,16 @@ class CommonFactory(BuilderNewStyle):
                 command += ' --target %s' % target
             if useClean:
                 command += ' --clean-first'
-            cpus = props.getProperty('CPUs')
-            if not cpus:
-                cpus = 1
-            elif cpus > 4:
-                cpus = 4
-            if self.compiler and self.compiler.startswith('vc'):
-                command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
-            else:
-                command += ' -- -j%s' % cpus
+            if runParallel:
+              cpus = props.getProperty('CPUs')
+              if not cpus:
+                  cpus = 1
+              elif cpus > 4:
+                  cpus = 4
+              if self.compiler and self.compiler.startswith('vc'):
+                  command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
+              else:
+                  command += ' -- -j%s' % cpus
             return command
 
         if desc is None:
@@ -611,6 +650,10 @@ class CommonFactory(BuilderNewStyle):
             if isPythonTest(test):
                 step = CommandTestPy(**args)
             elif test == 'java':
+                if isBranch24(self):
+                    args['logfiles'] = {"junit-report": "modules/java/test/.build/testResults/junit-noframes.html"}
+                else:
+                    args['logfiles'] = {"junit-report": "modules/java/pure_test/.build/testResults/junit-noframes.html"}
                 step = CommandTestJava(**args)
             else:
                 step = CommandTestCPP(**args)
@@ -664,7 +707,7 @@ class CommonFactory(BuilderNewStyle):
                     extract_fn = extract,
                     workdir = "build",
                     env=self.env,
-                    hideStepIf=hideStepIfSuccessSkipFn))
+                    hideStepIf=False))#hideStepIfSuccessSkipFn))
 
     def getTestList(self, isPerf = False):
         prop = "tests_performance" if isPerf else "tests_accuracy"
@@ -674,11 +717,8 @@ class CommonFactory(BuilderNewStyle):
         else:
             all = self.getProperty(prop).split()
             res = [i for i in all if i not in main]
-        if not isPerf and self.runPython and not self.isContrib:
-            res.append('python')
-            if isNotBranch24(self):
-                if self.osType == OSType.LINUX or self.getProperty('slavename', '') == 'windows-slave-x64-intel':
-                    res.append('python3')
+        if not self.runPython or self.isContrib:
+            res = [i for i in res if not isPythonTest(i)]
         return [i for i in res if i not in self.getTestBlacklist()]
 
     @defer.inlineCallbacks
@@ -718,8 +758,8 @@ class CommonFactory(BuilderNewStyle):
                 name='upload artifacts',
                 slavesrc='release',
                 workdir='build',
-                masterdest=Interpolate(getDirectoryForExport() + path),
-                url=Interpolate(getDirectoryForExport(True) + path))
+                masterdest=Interpolate(getExportDirectory() + path),
+                url=Interpolate(getExportURL() + path))
         yield self.processStep(step)
 
 
@@ -745,6 +785,19 @@ class CommonFactory(BuilderNewStyle):
 
     def getNameSuffix(self):
         res = '' if self.buildShared else '-static'
+        if self.dockerImage and isinstance(self.dockerImage, (list, tuple)) and self.dockerImage[0]:
+            res += self.dockerImage[0]
+        if self.cmake_toolset:
+            res += self.cmake_toolset[0]
         if self.isDebug:
             res += '-debug'
         return res
+
+
+    @defer.inlineCallbacks
+    def after_build_steps(self):
+        yield None
+
+    @defer.inlineCallbacks
+    def after_tests_steps(self):
+        yield None

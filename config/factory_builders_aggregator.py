@@ -19,6 +19,9 @@ from constants import trace
 # {'is64': True, 'isPrecommit': False, 'branch': '2.4', 'isWin': False}
 #
 def ParametersGenerator(init_params, variate):
+    from pprint import pprint
+    pprint(init_params)
+    pprint(variate)
     size = len(variate)
     state = size * [-1]
     pos = 0

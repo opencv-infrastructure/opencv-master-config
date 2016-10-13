@@ -28,8 +28,9 @@ class GenHTML(ShellCommand):
 
 class CoverageFactory(ParentClass):
     def __init__(self, **kwargs):
-        useSlave = ['linux-slave-x64-3']
+        useSlave = ['linux-1']
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
+        kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'coverage'))
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks
@@ -56,7 +57,7 @@ class CoverageFactory(ParentClass):
 
         step =ShellCommand(
             name='zero coverage',
-            command=['lcov', '--directory', builddir, '--zerocounters'],
+            command=self.envCmd.split() + ['lcov', '--directory', builddir, '--zerocounters'],
             workdir='build',
             env=self.env,
             haltOnFailure=False)
@@ -64,7 +65,7 @@ class CoverageFactory(ParentClass):
 
         step =ShellCommand(
             name='init coverage',
-            command=['lcov', '--directory', builddir, '--capture', '--initial', '-o', 'opencv_base.info'],
+            command=self.envCmd.split() + ['lcov', '--directory', builddir, '--capture', '--initial', '-o', 'opencv_base.info'],
             workdir='build',
             env=self.env,
             haltOnFailure=False)
@@ -74,7 +75,7 @@ class CoverageFactory(ParentClass):
 
         step = ShellCommand(
             name='run coverage',
-            command=['lcov', '--directory', builddir, '--capture', '-o', 'opencv_test.info'],
+            command=self.envCmd.split() + ['lcov', '--directory', builddir, '--capture', '-o', 'opencv_test.info'],
             workdir='build',
             env=self.env,
             haltOnFailure=False)
@@ -82,7 +83,7 @@ class CoverageFactory(ParentClass):
 
         step = ShellCommand(
             name='combine coverage',
-            command=['lcov',
+            command=self.envCmd.split() + ['lcov',
                 '-a', 'opencv_base.info',
                 '-a', 'opencv_test.info',
                 '-o', 'opencv_total.info'],
@@ -93,7 +94,7 @@ class CoverageFactory(ParentClass):
 
         step = ShellCommand(
             name='filter coverage',
-            command=['lcov',
+            command=self.envCmd.split() + ['lcov',
                 '--remove', 'opencv_total.info',
                 '/usr/include/*',
                 '/usr/lib/*',
@@ -129,7 +130,7 @@ class CoverageFactory(ParentClass):
 
         step = GenHTML(
             name='generate coverage report',
-            command=['genhtml',
+            command=self.envCmd.split() + ['genhtml',
                 '--prefix', Interpolate('%(prop:builddir)s'),
                 '-t', genTitle,
                 '-o', 'coverage_html',
@@ -144,8 +145,6 @@ class CoverageFactory(ParentClass):
                 name='upload coverage',
                 workdir='build',
                 slavesrc='coverage_html',
-                masterdest=Interpolate(getDirectoryForExport() + path),
-                url=Interpolate(getDirectoryForExport(True) + path + '/index.html'))
+                masterdest=Interpolate(getExportDirectory() + path),
+                url=Interpolate(getExportURL() + path + '/index.html'))
         yield self.processStep(step)
-
-

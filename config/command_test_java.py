@@ -4,9 +4,6 @@ from command_test import CommandTest
 
 class CommandTestJava(CommandTest):
     def __init__(self, **kwargs):
-        if 'logfiles' in kwargs:
-            kwargs.pop('logfiles')
-        kwargs['logfiles'] = {"junit-report": "modules/java/pure_test/.build/testResults/junit-noframes.html"}
         CommandTest.__init__(self, **kwargs)
         self.addLogObserver('stdio', JavaUnitTestsObserver())
 
@@ -24,6 +21,7 @@ class JavaUnitTestsObserver(LogLineObserver):
         self.testName = ""
 
     def outLineReceived(self, line):
+        line = line.strip() # remove CR on Windows
         result = self.test_started.search(line)
         if result:
             self.testName = result.group(1)

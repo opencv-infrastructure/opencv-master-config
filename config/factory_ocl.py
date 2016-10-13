@@ -1,7 +1,7 @@
 from twisted.internet import defer
 
 from build_utils import OSType, isBranch24, isNotBranch24
-from constants import PLATFORM_DEFAULT, PLATFORM_INTEL
+from constants import PLATFORM_DEFAULT
 from factory_ipp import IPP_factory as BaseFactory
 
 class OCL_factory(BaseFactory):
@@ -25,7 +25,7 @@ class OCL_factory(BaseFactory):
 
     def _getOpenCLDeviceMap(self):
         assert not (self.platform is None or self.platform == '')
-        if self.platform == PLATFORM_DEFAULT or self.platform == PLATFORM_INTEL:
+        if self.platform == PLATFORM_DEFAULT:
             return {'opencl' : ':GPU:'}
         assert False
 

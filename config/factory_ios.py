@@ -26,8 +26,8 @@ class iOSFactory(BaseFactory):
             Compile(name="build framework",
                 warningPattern=re.compile(r'.*(?<!libtool: )warning[: ].*', re.I | re.S),
                 warnOnWarnings=True,
-                workdir='build',
-                command="python ../%s/platforms/ios/build_framework.py build_ios" % self.SRC_OPENCV)
+                workdir='build', env=self.env,
+                command=self.envCmd + "python ../%s/platforms/ios/build_framework.py build_ios" % self.SRC_OPENCV)
         yield self.processStep(step)
 
     @defer.inlineCallbacks
@@ -36,8 +36,8 @@ class iOSFactory(BaseFactory):
             Compile(name="build contrib framework",
                     warningPattern=re.compile(r'.*(?<!libtool: )warning[: ].*', re.I | re.S),
                     warnOnWarnings=True,
-                    workdir='build',
-                    command="python ../%s/platforms/ios/build_framework.py --contrib ../%s build_ios_contrib" % (self.SRC_OPENCV, self.SRC_OPENCV_CONTRIB))
+                    workdir='build', env=self.env,
+                    command=self.envCmd + "python ../%s/platforms/ios/build_framework.py --contrib ../%s build_ios_contrib" % (self.SRC_OPENCV, self.SRC_OPENCV_CONTRIB))
         yield self.processStep(step)
 
 
@@ -58,14 +58,14 @@ class iOSFactory(BaseFactory):
                 ShellCommand(
                     name = "pack opencv",
                     workdir = "build/build_ios",
-                    command=["zip", "-r", "-9", "-y", "../release/opencv2.framework.zip", "opencv2.framework"])
+                    command=self.envCmd.split() + ["zip", "-r", "-9", "-y", "../release/opencv2.framework.zip", "opencv2.framework"])
             yield self.processStep(step)
         if self.buildWithContrib:
             step = \
                 ShellCommand(
                     name="pack opencv_contrib",
                     workdir="build/build_ios_contrib",
-                    command=["zip", "-r", "-9", "-y", "../release/opencv2_contrib.framework.zip", "opencv2.framework"])
+                    command=self.envCmd.split() + ["zip", "-r", "-9", "-y", "../release/opencv2_contrib.framework.zip", "opencv2.framework"])
             yield self.processStep(step)
 
         yield self.upload_release()

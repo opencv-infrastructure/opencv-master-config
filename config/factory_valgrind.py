@@ -3,8 +3,9 @@ from factory_ocl import OCL_factory as ParentClass
 
 class ValgrindFactory(ParentClass):
     def __init__(self, **kwargs):
-        useSlave = ['linux-slave-x64-3']
+        useSlave = ['linux-1']
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
+        kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'valgrind'))
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks

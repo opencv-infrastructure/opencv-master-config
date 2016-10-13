@@ -7,3 +7,4 @@ twistd.*
 *.save
 
 buildbot_passwords.py
+devices.py

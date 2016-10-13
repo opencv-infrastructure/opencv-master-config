@@ -6,7 +6,7 @@ import constants
 
 from twisted.web.static import File
 
-from build_utils import getDirectoryForExport
+from build_utils import getExportDirectory
 
 c = BuildmasterConfig = {}
 
@@ -55,7 +55,7 @@ import pr_github_opencv_contrib
 webstatus = WebStatus(http_port=8010, authz=authz_cfg, pullrequests=[pr_github_opencv.context, pr_github_opencv_contrib.context])
 c['status'].append(webstatus)
 
-webstatus.putChild('export', File(getDirectoryForExport()));
+webstatus.putChild('export', File(getExportDirectory()));
 
 for b in c['builders']:
     if type(b) == type({}):

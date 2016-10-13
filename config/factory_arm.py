@@ -31,21 +31,27 @@ def getAvailableDevices(devices):
     return result
 
 
+class ARMPrepareDeploy(ShellCommand):
+    cmd = 'ssh {user}@{host} "~/prepare_deploy.sh {destdir}"'
+    def __init__(self, device, destdir, **kwargs):
+        ShellCommand.__init__(self, command=ARMPrepareDeploy.cmd.format(destdir=destdir, **device), haltOnFailure=True, **kwargs)
+
 
 class ARMDeploy(ShellCommand):
     """ Make rsync call: 'sources' is list of strings and 'dest' is string """
     def __init__(self, sources, dest, **kwargs):
         # rsync -a bin lib ../self.SRC_OPENCV_EXT/testdata ubuntu@seco-gpu-devkit:.
-        cmd = ["rsync", "-a", "--delete", "-v"]
+        cmd = ["rsync", "--inplace", "-a", "--delete", "-v"]
         cmd.extend(sources)
         cmd.append(dest)
-        ShellCommand.__init__(self, command=" ".join(cmd), **kwargs)
+        ShellCommand.__init__(self, command=" ".join(cmd), haltOnFailure=True, **kwargs)
 
 
 
 class ARMTest(CommandTest):
     """ Run distributed testing on remote device using gtest sharding feature """
-    def __init__(self, **kwargs):
+    def __init__(self, workdir, devices, **kwargs):
+        self.workdir = workdir
         self.devices = devices
         self.shardCount = sum([d['cores'] for d in self.devices])
         CommandTest.__init__(self, command=self.getBigCommand(), logfiles=self.getLogFiles(),
@@ -65,14 +71,14 @@ class ARMTest(CommandTest):
         return " ; ".join(pieces) + " ; wait"
 
     def getSmallCommand(self, device, shardIndex):
-        return '(ssh %s@%s "%s" > %s &)' % (device['user'], device['host'], self.getRemoteCommand(shardIndex), self.getLogName(shardIndex))
+        return "(ssh %s@%s '%s' > %s &)" % (device['user'], device['host'], self.getRemoteCommand(shardIndex), self.getLogName(shardIndex))
 
     def getRemoteCommand(self, shardIndex):
-        smallPieces = ["cd work",
+        smallPieces = ["cd %s/build" % self.workdir,
                        "export GTEST_SHARD_INDEX=%d" % shardIndex,
                        "export GTEST_TOTAL_SHARDS=%d" % self.shardCount,
-                       "export LD_LIBRARY_PATH=lib",
-                       "export OPENCV_TEST_DATA_PATH=testdata",
+                       "export LD_LIBRARY_PATH=`pwd`/lib",
+                       "export OPENCV_TEST_DATA_PATH=`pwd`/../opencv_extra/testdata",
                        "./bin/opencv_test_core",
                        "./bin/opencv_test_imgproc",
                        "./bin/opencv_test_calib3d --gtest_filter=-*fisheyeTest.rectify*",
@@ -149,49 +155,95 @@ class ARMFactory(BaseFactory):
         BaseFactory.__init__(self, *args, **myargs)
 
     @defer.inlineCallbacks
-    def testAll(self):
-        steps = []
-        devices = [d for d in global_devices if d.arch == self.device_arch]
+    def run(self):
+        self.buildWithContrib = self.buildWithContrib and not isBranch24(self)
+        yield self.initialize()
+        yield self.cleanup_builddir()
+        yield self.checkout_sources()
+        yield self.build()
+        yield self.determineTests()
+        yield self.testAll()
 
+
+    @defer.inlineCallbacks
+    def testAll(self):
+        devices = [d for d in global_devices if d["arch"] == self.device_arch]
+        if len(devices) == 0:
+           return
+
+        workdir = "work/" + self.getProperty('branch', default=('unknown' if self.branch is None else self.branch))
         # deploy
-        for d in devices:
-            steps.append(
-                ARMDeploy(name="deploy to {host}".format(**d),
-                          sources=["bin", "lib", "../%s/testdata" % self.SRC_OPENCV_EXT, "../%s/modules/python/test/*.py" % self.SRC_OPENCV],
-                          dest="{user}@{host}:work".format(**d),
+        deploy_steps = [
+                ARMPrepareDeploy(name="prepare deploy on {host}".format(**d),
+                          destdir=workdir, device=d,
                           workdir='build')
-           )
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(deploy_steps, len(devices))
+        deploy_steps = [
+                ARMDeploy(name="deploy binaries to {host}".format(**d),
+                          sources=["bin", "lib"],
+                          dest="{user}@{host}:{workdir}/build".format(workdir=workdir, **d),
+                          workdir='build')
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(deploy_steps, len(devices))
+        deploy_steps = [
+                ARMDeploy(name="deploy test data to {host}".format(**d),
+                          sources=["testdata"],
+                          dest="{user}@{host}:{workdir}/opencv_extra".format(workdir=workdir, **d),
+                          workdir=self.SRC_OPENCV_EXT)
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(deploy_steps, len(devices))
+        deploy_steps = [
+                ARMDeploy(name="deploy python tests to {host}".format(**d),
+                          sources=["data", "samples", "modules"],
+                          dest="{user}@{host}:{workdir}/opencv".format(workdir=workdir, **d),
+                          workdir=self.SRC_OPENCV)
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(deploy_steps, len(devices))
 
         # check temperature
-        for d in devices:
-            steps.append(ARMTemperatureCPU(name="cpu before run [{host}]".format(**d), device=d))
+        temperature_steps = [
+                ARMTemperatureCPU(name="cpu before run [{host}]".format(**d), device=d)
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(temperature_steps, len(devices))
 
-        if len(devices) > 0:
-            # run tests, use 'devices' list
-            steps.append(ARMTest(name="distributed test"))
+        # run tests, use 'devices' list
+        steps = []
+        steps.append(ARMTest(name="distributed test", workdir=workdir, devices=devices))
+
+        if 'python2' in self.getProperty("tests_accuracy_main", "").split():
             # run python test on one device
             steps.append(
                 ShellCommand(name="python test",
                              warnOnWarnings=True,
-                             command='ssh {user}@{host} "'\
-                                     'cd work ; '\
-                                     'export OPENCV_TEST_DATA_PATH=testdata ; '\
-                                     'export LD_LIBRARY_PATH=lib ; '\
-                                     'export PYTHONPATH=lib ; '\
-                                     'python test.py -v 2>&1'\
-                                     '"'.format(**devices[0])))
-
-        # check temperature
-        for d in devices:
-            steps.append(ARMTemperatureCPU(name="cpu after run [{host}]".format(**d), device=d))
+                             command='ssh {user}@{host} \''\
+                                 'cd {workdir}/build ; '\
+                                 'export OPENCV_TEST_DATA_PATH=`pwd`/../opencv_extra/testdata ; '\
+                                 'export LD_LIBRARY_PATH=`pwd`/lib ; '\
+                                 'export PYTHONPATH=`pwd`/lib ; '\
+                                 'python ../opencv/modules/python/test/test.py --repo `pwd`/../opencv -v 2>&1'\
+                                 '\''.format(workdir=workdir, **devices[0])))
 
         yield self.bb_build.processStepsInParallel(steps, 1)  # No parallel launch
+
+        # check temperature
+        temperature_steps = [
+                ARMTemperatureCPU(name="cpu after run [{host}]".format(**d), device=d)
+                for d in devices
+        ]
+        yield self.bb_build.processStepsInParallel(temperature_steps, len(devices))
 
 
 class ARMv7Factory(ARMFactory):
     def __init__(self, *args, **kwargs):
         myargs = dict(
             useName='ARMv7',
+            dockerImage=(None, 'arm-gnueabihf'),
             device_arch=DEVICE_ARCH_ARMv7,
             locks = [armv7lock.access("exclusive")],
         )
@@ -201,9 +253,11 @@ class ARMv7Factory(ARMFactory):
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
         self.cmakepars['CMAKE_TOOLCHAIN_FILE'] = '../%s/platforms/linux/arm-gnueabi.toolchain.cmake' % self.SRC_OPENCV
-        self.cmakepars['GCC_COMPILER_VERSION'] = '4.8'
+        #self.cmakepars['GCC_COMPILER_VERSION'] = '5'
         self.cmakepars['ENABLE_NEON'] = 'YES'
         self.cmakepars['ENABLE_VFPV3'] = 'YES'
+        self.cmakepars.pop('WITH_GDCM', None)
+        self.cmakepars.pop('WITH_OPENCL', None)
         is24 = isBranch24(self)
         self.cmakepars['PYTHON_INCLUDE_PATH' if is24 else 'PYTHON2_INCLUDE_PATH'] = \
             '/usr/arm-linux-gnueabihf/include/python2.7'
@@ -217,6 +271,7 @@ class ARMv8Factory(ARMFactory):
     def __init__(self, *args, **kwargs):
         myargs = dict(
             useName='ARMv8',
+            dockerImage=(None, 'arm-aarch64'),
             device_arch=DEVICE_ARCH_ARMv8,
             locks = [armv8lock.access("exclusive")],
         )
@@ -226,4 +281,5 @@ class ARMv8Factory(ARMFactory):
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
         self.cmakepars['CMAKE_TOOLCHAIN_FILE'] = '../%s/platforms/linux/aarch64-gnu.toolchain.cmake' % self.SRC_OPENCV
-        self.cmakepars['GCC_COMPILER_VERSION'] = '4.8'
+        #self.cmakepars['GCC_COMPILER_VERSION'] = '5'
+        self.cmakepars.pop('WITH_GDCM', None)

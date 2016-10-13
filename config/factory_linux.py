@@ -13,9 +13,9 @@ from factory_ocl import OCL_factory as BaseFactory
 
 class AbiDumpCommand(ShellCommand):
 
-    def __init__(self, installPath, resultFile, **kwargs):
+    def __init__(self, builder, installPath, resultFile, **kwargs):
         logFile = "abi_log.txt"
-        cmd = [
+        cmd = builder.envCmd.split() + [
             "abi-compliance-checker",
             "-l", "opencv",
             "-dump", "opencv_abi.xml",
@@ -29,16 +29,16 @@ class AbiDumpCommand(ShellCommand):
 
 class AbiFindBaseCommand(SetPropertyFromCommand):
 
-    def __init__(self, **kwargs):
+    def __init__(self, builder, **kwargs):
         def extractor(rc, stdout, stderr):
             if rc == 0:
                 for fname in self.getCandidates():
                     if fname in stdout:
                         print 'ABI: found', fname
-                        return {'abi_base_file':'/opt/abi/%s' % fname}
+                        return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             print 'ABI: fallback to 3.0.0'
-            return {'abi_base_file':'/opt/abi/dump-3.0.0.abi.tar.gz'}
-        cmd = 'ls -1 /opt/abi/*.abi.tar.gz'
+            return {'abi_base_file':'/opt/build-worker/abi/dump-3.0.0.abi.tar.gz'}
+        cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
@@ -60,10 +60,10 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
 
 class AbiCompareCommand(ShellCommand):
 
-    def __init__(self, resultFile, **kwargs):
+    def __init__(self, builder, resultFile, **kwargs):
         reportFile = "abi_report.html"
         logFile = "abi_log.txt"  # TODO Used?
-        cmd = [
+        cmd = builder.envCmd.split() + [
             "abi-compliance-checker",
             "-l", "opencv",
             "-old", Interpolate("%(prop:abi_base_file)s"),
@@ -111,7 +111,7 @@ class LinuxPrecommitFactory(BaseFactory):
 
     def initConstants(self):
         BaseFactory.initConstants(self)
-        self.installPath = 'install'
+        self.installPath = '../install'
 
 
     def set_cmake_parameters(self):
@@ -128,14 +128,14 @@ class LinuxPrecommitFactory(BaseFactory):
         if isNotBranch24(self):
             yield self.check_build()
             if not self.isContrib:
-                yield self.check_abi()
+                if bool(self.getProperty('ci-run_abi_check', default=True)):
+                    yield self.check_abi()
 
 
     @defer.inlineCallbacks
     def check_build(self):
         d = 'samples_build'
-        cmake_command = [
-            self.envCmd,
+        cmake_command = self.envCmd.split() + [
             'cmake',
             '../' + self.SRC_OPENCV + '/samples',
             '-DCMAKE_PREFIX_PATH=%(prop:workdir)s/build/' + self.installPath]
@@ -173,16 +173,19 @@ class LinuxPrecommitFactory(BaseFactory):
         resultFile = 'current.abi.tar.gz'
         step = \
             AbiDumpCommand(
+                builder = self,
                 name = 'Generate ABI dump',
                 installPath = self.installPath,
                 resultFile=resultFile)
         yield self.processStep(step)
         step = \
             AbiFindBaseCommand(
+                builder = self,
                 name='Find ABI base file')
         yield self.processStep(step)
         step = \
             AbiCompareCommand(
+                builder = self,
                 name = 'Compare ABI dumps',
                 resultFile=resultFile)
         yield self.processStep(step)
