@@ -103,8 +103,7 @@ class CommonFactory(BuilderNewStyle):
         assert not (self.buildDocs is None)
         self.buildExamples = kwargs.pop('buildExamples', True)
         assert not (self.buildExamples is None)
-        self.useSSE = kwargs.pop('useSSE', None)
-        self.useAVX = kwargs.pop('useAVX', None)
+        self.useSSE = kwargs.pop('useSSE', None) # TODO Rename to useIntrinsics
         self.isDebug = kwargs.pop('isDebug', False)
         self.runPython = kwargs.pop('runPython', self.osType != OSType.ANDROID and not (self.isDebug and self.osType == OSType.WINDOWS))
         self.runTests = kwargs.pop('runTests', True)
@@ -114,6 +113,8 @@ class CommonFactory(BuilderNewStyle):
         self.isContrib = kwargs.pop('isContrib', False)
         self.envCmd = kwargs.pop('envCmd', 'buildenv')
         self.env = kwargs.pop('env', {}).copy()
+        self.env['PYTHONDONTWRITEBYTECODE'] = '1'
+        self.env['PYTHONUNBUFFERED'] = '1'
         assert type(self.env) is dict
         self.cmake_generator = kwargs.pop('cmake_generator', None)
         self.cmake_toolset = kwargs.pop('cmake_toolset', None) # (builder suffix, toolset value)
@@ -133,15 +134,15 @@ class CommonFactory(BuilderNewStyle):
             if self.platform == PLATFORM_DEFAULT:
                 if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
                     if self.is64 is None or self.is64:
-                        self.useSlave = ['linux-1']
-                        if self.isPrecommit:
-                            self.useSlave = ['linux-1', 'linux-2']
+                        self.useSlave = ['linux-1', 'linux-2']
+                        #if not self.isPrecommit:
+                        #    self.useSlave = ['linux-1']
                 elif self.osType == OSType.WINDOWS:
                     self.useSlave = ['windows-1', 'windows-2']
                 elif self.osType == OSType.MACOSX:
-                    self.useSlave = ['macosx-1']
-                    if self.isPrecommit:
-                        self.useSlave = ['macosx-1', 'macosx-2']
+                    self.useSlave = ['macosx-1', 'macosx-2']
+                    #if not self.isPrecommit:
+                    #    self.useSlave = ['macosx-1']
 
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
@@ -211,7 +212,7 @@ class CommonFactory(BuilderNewStyle):
                     run_py.append(' --serial %s' % self.androidDevice)
             return run_py
 
-    def getTestBlacklist(self):
+    def getTestBlacklist(self, isPerf=False):
         '''
         list of tests to skip, due to some problems:
         - java: should be fixed
@@ -224,7 +225,7 @@ class CommonFactory(BuilderNewStyle):
         if isBranch24(self):
             return ["gpu"]
         else:
-            return ["tracking", "dnn", "viz", "shape", "rgbd", "stereo"]
+            return ["dnn", "viz", "shape", "rgbd", "stereo"] + (["tracking"] if isPerf else [])
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''
@@ -400,26 +401,16 @@ class CommonFactory(BuilderNewStyle):
         if self.useSSE is None:
             pass  # default
         elif self.useSSE == True:
-            self.cmakepars['ENABLE_SSE2'] = 'ON'
-            self.cmakepars['ENABLE_SSE3'] = 'ON'
-            if not isBranch24(self):
-                self.cmakepars['ENABLE_SSSE3'] = 'ON'
-                self.cmakepars['ENABLE_SSE41'] = 'ON'
-                self.cmakepars['ENABLE_SSE42'] = 'ON'
+            if isBranch24(self):
+                self.cmakepars['ENABLE_SSE2'] = 'ON'
+                self.cmakepars['ENABLE_SSE3'] = 'ON'
         elif self.useSSE == False:
-            self.cmakepars['ENABLE_SSE2'] = 'OFF'
-            self.cmakepars['ENABLE_SSE3'] = 'OFF'
-            if not isBranch24(self) and not self.isDebug:
-                self.cmakepars['ENABLE_SSSE3'] = 'OFF'
-                self.cmakepars['ENABLE_SSE41'] = 'OFF'
-                self.cmakepars['ENABLE_SSE42'] = 'OFF'
-            if self.osType in [OSType.LINUX, OSType.ANDROID, OSType.MACOSX] and self.compiler == 'gcc':
-                self.cmakepars['CMAKE_C_FLAGS'] = '-mno-sse2'
-                self.cmakepars['CMAKE_CXX_FLAGS'] = '-mno-sse2'
-
-        if self.useAVX:
-            self.cmakepars['ENABLE_AVX'] = 'ON'
-            self.cmakepars['ENABLE_AVX2'] = 'ON'
+            if isBranch24(self):
+                self.cmakepars['ENABLE_SSE2'] = 'OFF'
+                self.cmakepars['ENABLE_SSE3'] = 'OFF'
+            elif self.isDebug:
+                self.cmakepars['CV_DISABLE_OPTIMIZATION'] = 'ON'
+                pass
 
         if self.osType == OSType.ANDROID:
             del self.cmakepars['BUILD_SHARED_LIBS']
@@ -471,7 +462,7 @@ class CommonFactory(BuilderNewStyle):
         step = Compile(command=cmake_command, env=self.env,
             workdir=builddir, name='cmake', haltOnFailure=True,
             descriptionDone='cmake', description='cmake',
-            logfiles=dict(cache='CMakeCache.txt', vars='CMakeVars.txt'),
+            logfiles=dict(cache='CMakeCache.txt', vars='CMakeVars.txt', CMakeOutput='CMakeFiles/CMakeOutput.log', CMakeError='CMakeFiles/CMakeError.log'),
             warningPattern=self.r_warning_pattern, warnOnWarnings=True)
         yield self.processStep(step)
 
@@ -707,7 +698,7 @@ class CommonFactory(BuilderNewStyle):
                     extract_fn = extract,
                     workdir = "build",
                     env=self.env,
-                    hideStepIf=False))#hideStepIfSuccessSkipFn))
+                    hideStepIf=hideStepIfSuccessSkipFn))
 
     def getTestList(self, isPerf = False):
         prop = "tests_performance" if isPerf else "tests_accuracy"
@@ -719,7 +710,7 @@ class CommonFactory(BuilderNewStyle):
             res = [i for i in all if i not in main]
         if not self.runPython or self.isContrib:
             res = [i for i in res if not isPythonTest(i)]
-        return [i for i in res if i not in self.getTestBlacklist()]
+        return [i for i in res if i not in self.getTestBlacklist(isPerf)]
 
     @defer.inlineCallbacks
     def testAll(self):

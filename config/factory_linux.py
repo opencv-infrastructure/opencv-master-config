@@ -70,7 +70,7 @@ class AbiCompareCommand(ShellCommand):
             "-new", resultFile,
             "-report-path", reportFile,
             "--gcc-path=gcc-4.6",
-            "-skip-internal", ".*UMatData.*|.*randGaussMixture.*",
+            "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*",
         ]
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 

@@ -24,12 +24,14 @@ python setup.py develop
 cd /app/config/pullrequest_ui && npm install
 )
 
-mkdir -p /app/credentials
-find /app/credentials/ -name '*.key*' -exec chmod 600 {} \;
+mkdir -p /app/credentials/ssh
 mkdir -p ${HOME}/.ssh
-if [ -f /app/credentials/config ]; then
-  cp -f /app/credentials/config ${HOME}/.ssh/config
-  chmod 644 ${HOME}/.ssh/config
+chmod 755 ${HOME}/.ssh
+find /app/credentials/ssh -name '*.key*' -exec cp -f {} ${HOME}/.ssh/ \;
+chmod -R 600 ${HOME}/.ssh/*
+if [ -f /app/credentials/ssh/config ]; then
+  cp -f /app/credentials/ssh/config ${HOME}/.ssh/config
+  chmod 600 ${HOME}/.ssh/config
 fi
 
 (

@@ -121,10 +121,14 @@ class WinPackBuild(BaseFactory):
         else:
             self.cmakepars['BUILD_opencv_python2'] = 'OFF'
             self.cmakepars['BUILD_opencv_python3'] = 'OFF'
+            self.cmakepars['WITH_LAPACK'] = 'OFF'
         self.cmakepars['WITH_OPENCL'] = 'ON'
         self.cmakepars['WITH_CUDA'] = 'OFF'
-        self.cmakepars['ENABLE_SSE'] = 'ON'
-        self.cmakepars['ENABLE_SSE2'] = 'ON'
+        if self.branch == '2.4':
+            self.cmakepars['ENABLE_SSE'] = 'ON'
+            self.cmakepars['ENABLE_SSE2'] = 'ON'
+        else:
+            self.cmakepars['CPU_BASELINE'] = 'SSE2'
         self.cmakepars['WITH_TBB'] = 'OFF'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = Interpolate('%(prop:workdir)s/install')
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'

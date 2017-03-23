@@ -20,8 +20,8 @@ class ValgrindFactory(ParentClass):
             r.append("--valgrind_supp=../%s/platforms/scripts/valgrind.supp" % self.SRC_OPENCV)
         return r
 
-    def getTestBlacklist(self):
-        return ParentClass.getTestBlacklist(self) + ["videoio", "java", "python", "python2", "python3"]
+    def getTestBlacklist(self, isPerf=False):
+        return ParentClass.getTestBlacklist(self, isPerf) + ["videoio", "java", "python", "python2", "python3"]
 
     def getTestMaxTime(self, isPerf):
         return 240 * 60

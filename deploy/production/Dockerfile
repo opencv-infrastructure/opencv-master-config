@@ -18,7 +18,7 @@ RUN \
   apt-get update && \
   apt-get install -y --no-install-recommends \
     python python-dev python-pip python-virtualenv libpython2.7-dev libffi-dev python-twisted python-twisted-web \
-    rsync p7zip-full \
+    openssh-client rsync p7zip-full \
     && \
   rm -rf /var/lib/apt/lists/*
 

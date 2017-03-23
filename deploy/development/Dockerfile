@@ -28,7 +28,7 @@ RUN \
 RUN \
   apt-get update && \
   apt-get install -y \
-    rsync p7zip-full && \
+    openssh-client rsync p7zip-full && \
   rm -rf /var/lib/apt/lists/*
 
 CMD ["/app/deploy/entry.sh"]

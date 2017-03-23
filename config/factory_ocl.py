@@ -48,8 +48,8 @@ class OCL_factory(BaseFactory):
         else:
             yield BaseFactory.determineTests(self)
 
-    def getTestBlacklist(self):
-        res = BaseFactory.getTestBlacklist(self)
+    def getTestBlacklist(self, isPerf=False):
+        res = BaseFactory.getTestBlacklist(self, isPerf)
         if not self.testOpenCL and isBranch24(self):
             res.append("ocl")
         return res

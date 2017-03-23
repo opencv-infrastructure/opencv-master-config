@@ -98,16 +98,17 @@ class GitHubContext(pullrequest.context.Context):
             return []
         buildersList = [
             'linux',
-            'ocllinux',
             'windows',
-            'ocl',
             'macosx',
-            'oclmacosx',
             'android',
             'docs',
             'linuxNoOpt',
             'ios',
-        ]
+        ] + ([] if pr.branch == '2.4' else [
+            'ocllinux',
+            'ocl',
+            #'oclmacosx',
+        ])
         return buildersList
 
     @defer.inlineCallbacks
@@ -217,6 +218,7 @@ class GitHubContext(pullrequest.context.Context):
 
     @defer.inlineCallbacks
     def _updateGitHubStatus(self, prid):
+        print('Updating PR status: %s ...' % prid)
         if self.githubStatusAccessToken is None:
             return
         try:
@@ -239,6 +241,7 @@ class GitHubContext(pullrequest.context.Context):
                     upd = GitHubCommitStatus(gh, self.username, self.repo)
                     res = yield upd.updateCommit(pr.head_sha, status, msg, self.statusUrl)
         except:
+            log.err()
             pass
 
     def onUpdatePullRequest(self, prid):
