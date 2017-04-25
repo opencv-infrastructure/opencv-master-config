@@ -30,6 +30,13 @@ def linux(cls):
         return cls(*args, **kwargs)
     return _
 
+def linux32(cls):
+    def _(*args, **kwargs):
+        kwargs['osType'] = OSType.LINUX
+        kwargs['is64'] = False
+        return cls(*args, **kwargs)
+    return _
+
 def windows32(cls):
     def _(*args, **kwargs):
         kwargs['osType'] = OSType.WINDOWS

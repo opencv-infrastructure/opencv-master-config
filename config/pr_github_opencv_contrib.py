@@ -44,8 +44,8 @@ class GitHubContext(pr_github_opencv.GitHubContext):
         linuxNoOpt=dict(name='Linux x64 Debug', builders=['precommit-contrib_linux64_no_opt'], order=5100),
         android_pack=dict(name='Android pack', builders=['precommit-contrib_pack_android'], order=10040),
 
-        linux_icc=dict(name='Linux x64 Intel Compiler', builders=['precommit-contrib_linux64-icc'], order=50010),
-        windows_icc=dict(name='Win64 Intel Compiler', builders=['precommit-contrib_windows64-icc'], order=50020),
+        #linux_icc=dict(name='Linux x64 Intel Compiler', builders=['precommit-contrib_linux64-icc'], order=50010),
+        #windows_icc=dict(name='Win64 Intel Compiler', builders=['precommit-contrib_windows64-icc'], order=50020),
 
         cuda=dict(name='CUDA', builders=['precommit-contrib_cuda_linux64'], order=100000),
     )

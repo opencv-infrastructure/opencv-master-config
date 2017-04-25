@@ -120,13 +120,15 @@ class CommonFactory(BuilderNewStyle):
         self.cmake_toolset = kwargs.pop('cmake_toolset', None) # (builder suffix, toolset value)
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
-        if self.osType == OSType.LINUX:
-            self.dockerImage = kwargs.pop('dockerImage', (None, 'ubuntu:14.04'))
-        elif self.osType == OSType.ANDROID:
-            self.dockerImage = kwargs.pop('dockerImage', (None, 'android:14.04'))
-        else:
-            assert kwargs.pop('dockerImage', None) is None
-            self.dockerImage = None
+        self.dockerImage = kwargs.pop('dockerImage', None)
+        if self.dockerImage is None:
+            if self.osType == OSType.LINUX:
+                self.dockerImage = (None, 'ubuntu:14.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+            elif self.osType == OSType.ANDROID:
+                self.dockerImage = (None, 'android:14.04')
+            else:
+                # not applicable
+                pass
 
         BuilderNewStyle.__init__(self, **kwargs)
 
@@ -137,6 +139,8 @@ class CommonFactory(BuilderNewStyle):
                         self.useSlave = ['linux-1', 'linux-2']
                         #if not self.isPrecommit:
                         #    self.useSlave = ['linux-1']
+                    else:
+                        self.useSlave = ['linux-1']
                 elif self.osType == OSType.WINDOWS:
                     self.useSlave = ['windows-1', 'windows-2']
                 elif self.osType == OSType.MACOSX:
@@ -217,7 +221,6 @@ class CommonFactory(BuilderNewStyle):
         list of tests to skip, due to some problems:
         - java: should be fixed
         - tracking: too long (> 24 hrs), should be optimized
-        - dnn: should be fixed
         - viz: needs OpenGL windows
         - shape: should be fixed
         - gpu: not tested yet
@@ -225,7 +228,7 @@ class CommonFactory(BuilderNewStyle):
         if isBranch24(self):
             return ["gpu"]
         else:
-            return ["dnn", "viz", "shape", "rgbd", "stereo"] + (["tracking"] if isPerf else [])
+            return ["viz", "shape", "rgbd", "stereo"] + (["tracking"] if isPerf else [])
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''

@@ -56,6 +56,8 @@ def is64ParameterCheck(platform, osType, **params):
         return [False]
     if osType == OSType.WINDOWS:
         return [True, False]
+    if osType == OSType.LINUX:
+        return [True, False]
     if osType == OSType.MACOSX:
         return [None]
     return [True]
@@ -70,7 +72,7 @@ def availableCompilers(platform, osType, **params):
 
 def availableToolset(platform, osType, **params):
     if osType == OSType.WINDOWS:
-        return [None, INTEL_COMPILER_TOOLSET_CURRENT]
+        return [None] #, INTEL_COMPILER_TOOLSET_CURRENT]
     else:
         return [None]
 
@@ -103,6 +105,7 @@ def useSSEParameter(branch, platform, osType, compiler, useIPP, **params):
     return [None]
 
 def useOpenCLParameter(platform, osType, compiler, **params):
+    is64 = params.get('is64', None)
     useSSE = params.get('useSSE', None)
     if osType == OSType.ANDROID:
         return [False]
@@ -117,7 +120,7 @@ def useOpenCLParameter(platform, osType, compiler, **params):
     if osType == OSType.MACOSX:
         return [True, False]
     if osType == OSType.LINUX:
-        return [True, False]
+        return [False] if is64 is False else [True, False]
     return [False]
 
 def testOpenCLParameter(platform, osType, compiler, useOpenCL, **params):
@@ -143,7 +146,7 @@ def useShared(branch, platform, osType, useIPP, **params):
 
 def availableDockerImage(platform, osType, **params):
     if osType == OSType.LINUX:
-        return [None, INTEL_COMPILER_DOCKER_CURRENT]
+        return [None] #, INTEL_COMPILER_DOCKER_CURRENT]
     else:
         return [None]
 
@@ -231,7 +234,7 @@ for branch in ['2.4', 'master']:
     addConfiguration(
         SetOfBuildersWithSchedulers(
             branch=branch, nameprefix='weekly-',
-            genForce=True, genNightly=True, nightlyHour=5, dayOfWeek=6,
+            genForce=True, genNightly=True, nightlyHour=5, dayOfWeek=5,
             builders=[
                 SetOfBuilders(
                     factory_class=ValgrindFactory,
@@ -410,8 +413,9 @@ addConfiguration(
         genForce=True, genNightly=False,
         builders=[
             LinuxPrecommit(builderName='precommit_linux64'),
+            linux32(LinuxPrecommit)(builderName='precommit_linux32', buildWithContrib=False),
             LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
-            OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04'),
+            OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_HALIDE':'ON'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False),
             WindowsPrecommit64(builderName='precommit_windows64'),
             WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),

@@ -16,8 +16,18 @@ class ValgrindFactory(ParentClass):
     def getRunPy(self, full = False):
         r = ParentClass.getRunPy(self, full)
         if full:
-            r.append("--valgrind")
-            r.append("--valgrind_supp=../%s/platforms/scripts/valgrind.supp" % self.SRC_OPENCV)
+            r += [
+                "--valgrind",
+                "--valgrind_opt=--tool=memcheck",
+                "--valgrind_opt=--leak-check=full",
+                "--valgrind_opt=--show-reachable=yes",
+                "--valgrind_opt=--undef-value-errors=yes",
+                "--valgrind_opt=--track-origins=yes",
+                "--valgrind_opt=--child-silent-after-fork=no",
+                "--valgrind_opt=--trace-children=yes",
+                "--valgrind_opt=--gen-suppressions=all",
+                "--valgrind_supp=../%s/platforms/scripts/valgrind.supp" % self.SRC_OPENCV,
+            ]
         return r
 
     def getTestBlacklist(self, isPerf=False):
