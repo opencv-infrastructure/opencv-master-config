@@ -36,8 +36,8 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                     if fname in stdout:
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
-            print 'ABI: fallback to 3.0.0'
-            return {'abi_base_file':'/opt/build-worker/abi/dump-3.0.0.abi.tar.gz'}
+            print 'ABI: fallback to 3.3.0'
+            return {'abi_base_file':'/opt/build-worker/abi/dump-3.3.0.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
@@ -70,7 +70,9 @@ class AbiCompareCommand(ShellCommand):
             "-new", resultFile,
             "-report-path", reportFile,
             "--gcc-path=gcc-4.6",
-            "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*",
+            "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
+                "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
+                ".*experimental_.*",
         ]
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
