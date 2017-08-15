@@ -452,7 +452,7 @@ class CommonFactory(BuilderNewStyle):
                 value = yield interpolateParameter(value, props)
                 cmakepars[key] = value
             cmakepars = ' '.join(['-D%s=%s' % (key, value) \
-                for key, value in cmakepars.items() if len(value) > 0])
+                for key, value in cmakepars.items() if value is not None])
 
             command = self.envCmd + 'cmake'
             if self.cmake_generator:
