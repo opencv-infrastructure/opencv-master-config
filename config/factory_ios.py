@@ -27,7 +27,9 @@ class iOSFactory(BaseFactory):
                 warningPattern=re.compile(r'.*(?<!libtool: )warning[: ].*', re.I | re.S),
                 warnOnWarnings=True,
                 workdir='build', env=self.env,
-                command=self.envCmd + "python ../%s/platforms/ios/build_framework.py build_ios" % self.SRC_OPENCV)
+                command=self.envCmd + "python ../%s/platforms/ios/build_framework.py build_ios" % self.SRC_OPENCV,
+                timeout=3*60
+            )
         yield self.processStep(step)
 
     @defer.inlineCallbacks
@@ -37,7 +39,9 @@ class iOSFactory(BaseFactory):
                     warningPattern=re.compile(r'.*(?<!libtool: )warning[: ].*', re.I | re.S),
                     warnOnWarnings=True,
                     workdir='build', env=self.env,
-                    command=self.envCmd + "python ../%s/platforms/ios/build_framework.py --contrib ../%s build_ios_contrib" % (self.SRC_OPENCV, self.SRC_OPENCV_CONTRIB))
+                    command=self.envCmd + "python ../%s/platforms/ios/build_framework.py --contrib ../%s build_ios_contrib" % (self.SRC_OPENCV, self.SRC_OPENCV_CONTRIB),
+                    timeout=3*60
+            )
         yield self.processStep(step)
 
 
