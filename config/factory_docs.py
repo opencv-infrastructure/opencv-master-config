@@ -1,3 +1,4 @@
+import re
 import os
 
 from twisted.internet import defer
@@ -74,6 +75,11 @@ class Docs_factory(BaseFactory):
         if isBranch24(self):
             yield self.compile(target='docs', desc='make pdf')
         yield self.compile(target='doxygen', desc='make doxygen', suppressionFile="../%s/doc/disabled_doc_warnings.txt" % self.SRC_OPENCV)
+
+        if self.isPrecommit:
+            if not isBranch24(self):
+                yield self.compile(target='check_pylint', desc='Pylint', warningPattern=re.compile(r'^warning[: ].*', re.I | re.S))
+
 
     @defer.inlineCallbacks
     def after_tests_steps(self):

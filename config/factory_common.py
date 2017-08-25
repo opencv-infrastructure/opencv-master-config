@@ -471,7 +471,7 @@ class CommonFactory(BuilderNewStyle):
 
 
     @defer.inlineCallbacks
-    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True, warningPattern=None, suppressionFile=None, runParallel=True):
+    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True, warningPattern=None, suppressionFile=None, runParallel=True, **kwargs):
         @renderer
         def compileCommand(props):
             command = '%s cmake --build . --config %s' % (self.envCmd, config)
@@ -500,7 +500,7 @@ class CommonFactory(BuilderNewStyle):
                     name=desc, descriptionDone=desc, description=desc, doStepIf=doStepIf,
                     warningPattern=warningPattern,
                     warnOnWarnings=True, haltOnFailure=True,
-                    suppressionFile=suppressionFile)
+                    suppressionFile=suppressionFile, **kwargs)
         yield self.processStep(step)
 
     def getModuleAccuracyTestFilter(self, module):
