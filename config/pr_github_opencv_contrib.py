@@ -71,9 +71,19 @@ class GitHubContext(pr_github_opencv.GitHubContext):
 
     @defer.inlineCallbacks
     def getBuildProperties(self, pr, b, properties, sourcestamps):
+        extra_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_extra')
+        extra_branch_name = pr.head_branch
+        if extra_branch_name_parameter:
+            extra_branch_name = extra_branch_name_parameter[1]
+
+        main_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv')
+        main_branch_name = pr.head_branch
+        if main_branch_name_parameter:
+            main_branch_name = main_branch_name_parameter[1]
+
         if not self.isBadBranch(pr):
-            if not ((yield self.readOtherPR(pr, 'opencv_extra', 'extra')) and
-                    (yield self.readOtherPR(pr, 'opencv', 'main'))):
+            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
+                    (yield self.readOtherPR(pr, 'opencv', main_branch_name, 'main'))):
                 defer.returnValue(False)
 
         properties.setProperty('branch', pr.branch, 'Pull request')
@@ -93,8 +103,8 @@ class GitHubContext(pr_github_opencv.GitHubContext):
             sourcestamps.append(dict(
                 codebase='opencv_merge',
                 repository='https://github.com/%s/%s.git' % (pr.head_user, 'opencv'),
-                branch=pr.head_branch,
-                revision=pr.head_sha))
+                branch=main_branch_name,
+                revision=main_branch_name))
 
         sourcestamps.append(dict(
             codebase='opencv_contrib',
@@ -118,8 +128,8 @@ class GitHubContext(pr_github_opencv.GitHubContext):
             sourcestamps.append(dict(
                 codebase='opencv_extra_merge',
                 repository='https://github.com/%s/%s.git' % (pr.head_user, 'opencv_extra'),
-                branch=pr.head_branch,
-                revision=pr.head_branch))
+                branch=extra_branch_name,
+                revision=extra_branch_name))
 
         defer.returnValue(True)
 

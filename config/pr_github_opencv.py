@@ -113,11 +113,11 @@ class GitHubContext(pullrequest.context.Context):
         return buildersList
 
     @defer.inlineCallbacks
-    def readOtherPR(self, pr, repoName, propName):
+    def readOtherPR(self, pr, repoName, branch_name, propName):
         prid = pr.prid
         try:
             gh = GitHub(userAgent=userAgent, async=True, access_token=githubAccessToken)
-            result = yield gh.repos(pr.head_user)(repoName)('branches')(pr.head_branch).get()
+            result = yield gh.repos(pr.head_user)(repoName)('branches')(branch_name).get()
             if gh.x_ratelimit_remaining == 0:
                 print 'GitHub API limit exceeded'
                 defer.returnValue(False)
@@ -148,9 +148,19 @@ class GitHubContext(pullrequest.context.Context):
 
     @defer.inlineCallbacks
     def getBuildProperties(self, pr, b, properties, sourcestamps):
+        extra_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_extra')
+        extra_branch_name = pr.head_branch
+        if extra_branch_name_parameter:
+            extra_branch_name = extra_branch_name_parameter[1]
+
+        contrib_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_contrib')
+        contrib_branch_name = pr.head_branch
+        if contrib_branch_name_parameter:
+            contrib_branch_name = contrib_branch_name_parameter[1]
+
         if not self.isBadBranch(pr):
-            if not ((yield self.readOtherPR(pr, 'opencv_extra', 'extra')) and
-                    (yield self.readOtherPR(pr, 'opencv_contrib', 'contrib'))):
+            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
+                    (yield self.readOtherPR(pr, 'opencv_contrib', contrib_branch_name, 'contrib'))):
                 defer.returnValue(False)
 
         properties.setProperty('branch', pr.branch, 'Pull request')
@@ -192,8 +202,8 @@ class GitHubContext(pullrequest.context.Context):
             sourcestamps.append(dict(
                 codebase='opencv_contrib_merge',
                 repository='https://github.com/%s/%s_contrib.git' % (pr.head_user, pr.head_repo),
-                branch=pr.head_branch,
-                revision=pr.head_branch))
+                branch=contrib_branch_name,
+                revision=contrib_branch_name))
 
         sourcestamps.append(dict(
             codebase='opencv_extra',
@@ -205,9 +215,8 @@ class GitHubContext(pullrequest.context.Context):
             sourcestamps.append(dict(
                 codebase='opencv_extra_merge',
                 repository='https://github.com/%s/%s.git' % (pr.head_user, 'opencv_extra'),
-                branch=pr.head_branch,
-                revision=pr.head_branch))
-
+                branch=extra_branch_name,
+                revision=extra_branch_name))
 
         defer.returnValue(True)
 
