@@ -4,7 +4,7 @@ import os
 from twisted.internet import defer
 
 from buildbot.steps.master import MasterShellCommand
-from buildbot.steps.shell import ShellCommand
+from buildbot.steps.shell import ShellCommand, Compile
 from buildbot.steps.slave import MakeDirectory
 from buildbot.steps.transfer import DirectoryUpload
 from buildbot.process.properties import Interpolate, renderer
@@ -43,6 +43,8 @@ class Docs_factory(BaseFactory):
         useName = kwargs.pop('useName', 'docs')
         dockerImage = kwargs.pop('dockerImage', (None, 'docs'))
         BaseFactory.__init__(self, *args, useName=useName, buildDocs=True, runTests=False, dockerImage=dockerImage, **kwargs)
+        if not self.isPrecommit and self.branch == 'master':
+            self.dockerImage = (None, 'docs-js')
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
@@ -70,6 +72,15 @@ class Docs_factory(BaseFactory):
             yield self.check_size('opencv_extra')
             if self.isContrib:
                 yield self.check_size('opencv_contrib')
+
+        if self.env.get('BUILD_IMAGE', None) == 'opencv-docs-js':
+            step = Compile(command=self.envCmd + 'python ../' + self.SRC_OPENCV + '/platforms/js/build_js.py js',
+                env=self.env, workdir='build', name='build_js', haltOnFailure=True,
+                descriptionDone='build_js', description='build_js',
+                logfiles=dict(cache='CMakeCache.txt', vars='CMakeVars.txt', CMakeOutput='CMakeFiles/CMakeOutput.log', CMakeError='CMakeFiles/CMakeError.log'),
+                warningPattern=self.r_warning_pattern, warnOnWarnings=False)
+            yield self.processStep(step)
+            self.cmakepars['OPENCV_JS_LOCATION'] = Interpolate('%(prop:workdir)s/build/js/bin/opencv.js')
 
         yield self.cmake()
         if isBranch24(self):
