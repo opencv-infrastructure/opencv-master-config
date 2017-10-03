@@ -438,6 +438,9 @@ class CommonFactory(BuilderNewStyle):
         if self.isPrecommit and not isBranch24(self):
             self.cmakepars['OPENCV_ENABLE_NONFREE'] = 'ON'
 
+        if self.getProperty('build_cxxflags', default=None):
+            self.cmakepars['CMAKE_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags', default='')
+
 
     @defer.inlineCallbacks
     def cmake(self, builddir='build', cmakedir=None):

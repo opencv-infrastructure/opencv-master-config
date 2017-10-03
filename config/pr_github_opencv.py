@@ -178,6 +178,7 @@ class GitHubContext(pullrequest.context.Context):
             self.pushBuildProperty(properties, pr.description, 'test_module[s]?', 'modules_filter')
             self.pushBuildProperty(properties, pr.description, 'test[s]?_filter[s]?', 'test_filter')
             self.pushBuildProperty(properties, pr.description, 'build_examples', 'build_examples')
+            self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
 
         self.pushBuildProperty(properties, pr.description, 'docker_image-' + re.escape(b.name), 'docker_image')
 
