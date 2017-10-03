@@ -26,6 +26,7 @@ class WinCompiler:
     VC11 = 'vc11' # Visual Studio 2012
     VC12 = 'vc12' # Visual Studio 2013
     VC14 = 'vc14' # Visual Studio 2015
+    VC15 = 'vc15' # Visual Studio 2017
 
     @staticmethod
     def getCMakeGenerator(compiler, is64):
@@ -38,6 +39,8 @@ class WinCompiler:
             cmake_generator = '"Visual Studio 12 Win64"' if is64 else '"Visual Studio 12"'
         elif compiler == WinCompiler.VC14:
             cmake_generator = '"Visual Studio 14 Win64"' if is64 else '"Visual Studio 14"'
+        elif compiler == WinCompiler.VC15:
+            cmake_generator = '"Visual Studio 15 Win64"' if is64 else '"Visual Studio 15"'
         return cmake_generator
 
 def getDocPackScript(osType):

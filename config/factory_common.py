@@ -142,7 +142,7 @@ class CommonFactory(BuilderNewStyle):
                     else:
                         self.useSlave = ['linux-1']
                 elif self.osType == OSType.WINDOWS:
-                    self.useSlave = ['windows-1', 'windows-2']
+                    self.useSlave = ['windows-1', 'windows-2'] if self.compiler != 'vc15' else ['windows-1']
                 elif self.osType == OSType.MACOSX:
                     self.useSlave = ['macosx-1', 'macosx-2']
                     #if not self.isPrecommit:

@@ -45,6 +45,8 @@ class GitHubContext(pullrequest.context.Context):
         # Optional
         linux32=dict(name='Linux32', builders=['precommit_linux32'], order=1000),
         win32=dict(name='Win32', builders=['precommit_windows32'], order=1100),
+        windows_vc15=dict(name='Win64 MSVS2017', builders=['precommit_windows64-vc15'], order=1101),
+        ocl_vc15=dict(name='Win64 MSVS2017 OpenCL', builders=['precommit_opencl-vc15'], order=1102),
         armv7=dict(name='ARMv7', builders=['precommit_armv7'], order=1200),
         armv8=dict(name='ARMv8', builders=['precommit_armv8'], order=1300),
         android_pack=dict(name='Android pack', builders=['precommit_pack_android'], order=10040),

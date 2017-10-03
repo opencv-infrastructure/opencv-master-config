@@ -23,7 +23,7 @@ platforms = [
     ]
 
 PlatformWindowsCompiler = {
-    PLATFORM_DEFAULT: [WinCompiler.VC14],
+    PLATFORM_DEFAULT: [WinCompiler.VC14], #, WinCompiler.VC15],
 }
 
 def osTypeParameter(platform, **params):
@@ -136,8 +136,11 @@ def useDebugParameter(platform, osType, compiler, useIPP, **params):
 
 def useShared(branch, platform, osType, useIPP, **params):
     is64 = params.get('is64', None)
+    compiler = params.get('compiler', None)
     isDebug = params.get('isDebug', None)
     enableStatic = False
+    if platform == PLATFORM_DEFAULT and compiler == WinCompiler.VC15:
+        return [True] # without static builds
     if platform == PLATFORM_DEFAULT and not is64 == False and not osType == OSType.ANDROID and not isDebug:
         enableStatic = True
     if not branch.startswith('2.4') and useIPP != 'ICV':
@@ -417,9 +420,11 @@ addConfiguration(
             LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
             OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_HALIDE':'ON'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False),
+            WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit64(builderName='precommit_windows64'),
             WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
             OCLPrecommit(builderName='precommit_opencl'),
+            OCLPrecommit(builderName='precommit_opencl-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit32(builderName='precommit_windows32'),
             MacOSXPrecommit(builderName='precommit_macosx'),
             OCLMacPrecommit(builderName='precommit_opencl_macosx'),
