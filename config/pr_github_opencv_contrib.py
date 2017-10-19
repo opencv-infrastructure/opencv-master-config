@@ -56,8 +56,14 @@ class GitHubContext(pr_github_opencv.GitHubContext):
     def getListOfAutomaticBuilders(self, pr):
         if self.isBadBranch(pr):
             return []
-        if self.isWIP(pr) or os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
+        force_builders = []
+        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
+        if force_builders_parameter:
+            force_builders = str(force_builders_parameter[1]).split(',')
+        if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
+        if self.isWIP(pr):
+            return force_builders
         buildersList = [
             'linux',
             'windows',
@@ -67,7 +73,7 @@ class GitHubContext(pr_github_opencv.GitHubContext):
             'docs',
             'ios',
         ]
-        return buildersList
+        return buildersList + force_builders
 
     @defer.inlineCallbacks
     def getBuildProperties(self, pr, b, properties, sourcestamps):

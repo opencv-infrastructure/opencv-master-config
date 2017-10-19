@@ -393,7 +393,10 @@ class CommonFactory(BuilderNewStyle):
         yield self.compile(config='debug' if self.isDebug else 'release')
 
     def set_cmake_parameters(self):
-        self.cmakepars['BUILD_SHARED_LIBS'] = 'ON' if self.buildShared else 'OFF'
+        if self.getProperty('build_shared', default=None) is not None:
+            self.cmakepars['BUILD_SHARED_LIBS'] = 'ON' if self.getProperty('build_shared', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
+        else:
+            self.cmakepars['BUILD_SHARED_LIBS'] = 'ON' if self.buildShared else 'OFF'
         if self.buildExamples is not None:
             self.cmakepars['BUILD_EXAMPLES'] = Interpolate('%(prop:build_examples:-' + ('ON' if self.buildExamples else 'OFF') + ')s')
         if not self.buildDocs is None:
@@ -432,14 +435,26 @@ class CommonFactory(BuilderNewStyle):
             self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3'
             self.cmakepars['WITH_GDCM'] = 'ON'
 
+        if self.getProperty('build_contrib', default=None):
+            self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
+
         if self.buildWithContrib:
             self.cmakepars['OPENCV_EXTRA_MODULES_PATH'] = self.getProperty('workdir') + '/' + self.SRC_OPENCV_CONTRIB + '/modules'
 
         if self.isPrecommit and not isBranch24(self):
             self.cmakepars['OPENCV_ENABLE_NONFREE'] = 'ON'
 
+        if self.getProperty('build_world', default=None):
+            self.cmakepars['BUILD_opencv_world'] = 'ON' if self.getProperty('build_world', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
+
         if self.getProperty('build_cxxflags', default=None):
             self.cmakepars['CMAKE_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags', default='')
+
+        if self.getProperty('build_tbb', default=None):
+            self.cmakepars['BUILD_TBB'] = 'ON' if self.getProperty('build_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
+
+        if self.getProperty('with_tbb', default=None):
+            self.cmakepars['WITH_TBB'] = 'ON' if self.getProperty('with_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
 
 
     @defer.inlineCallbacks

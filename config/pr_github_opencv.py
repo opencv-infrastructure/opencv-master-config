@@ -97,8 +97,14 @@ class GitHubContext(pullrequest.context.Context):
     def getListOfAutomaticBuilders(self, pr):
         if self.isBadBranch(pr):
             return []
-        if self.isWIP(pr) or os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
+        force_builders = []
+        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
+        if force_builders_parameter:
+            force_builders = str(force_builders_parameter[1]).split(',')
+        if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
+        if self.isWIP(pr):
+            return force_builders
         buildersList = [
             'linux',
             'windows',
@@ -112,7 +118,7 @@ class GitHubContext(pullrequest.context.Context):
             'ocl',
             #'oclmacosx',
         ])
-        return buildersList
+        return buildersList + force_builders
 
     @defer.inlineCallbacks
     def readOtherPR(self, pr, repoName, branch_name, propName):
@@ -176,13 +182,29 @@ class GitHubContext(pullrequest.context.Context):
                 print 'ERROR: Can\'t schedule perf precommit build without regression test filter. Use check_regression parameter'
                 defer.returnValue(False)
 
+        re_builder = re.escape(b.name)
+
         if self.isWIP(pr):
             self.pushBuildProperty(properties, pr.description, 'test_module[s]?', 'modules_filter')
             self.pushBuildProperty(properties, pr.description, 'test[s]?_filter[s]?', 'test_filter')
             self.pushBuildProperty(properties, pr.description, 'build_examples', 'build_examples')
-            self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
+            if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS[-:]' + re_builder, 'build_cxxflags') is None:
+                self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
 
-        self.pushBuildProperty(properties, pr.description, 'docker_image-' + re.escape(b.name), 'docker_image')
+        self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
+
+        self.pushBuildProperty(properties, pr.description, 'build_tbb', 'build_tbb')
+        self.pushBuildProperty(properties, pr.description, 'with_tbb', 'with_tbb')
+
+        if self.pushBuildProperty(properties, pr.description, 'build_world[-:]' + re_builder, 'build_world') is None:
+            self.pushBuildProperty(properties, pr.description, 'build_world', 'build_world')
+
+        if self.pushBuildProperty(properties, pr.description, 'build_shared[-:]' + re_builder, 'build_shared') is None:
+            self.pushBuildProperty(properties, pr.description, 'build_shared', 'build_shared')
+
+        self.pushBuildProperty(properties, pr.description, 'build_contrib', 'build_contrib')
+
+        self.pushBuildProperty(properties, pr.description, 'build_parallel_tests', 'parallel_tests')
 
         sourcestamps.append(dict(
             codebase='opencv',
