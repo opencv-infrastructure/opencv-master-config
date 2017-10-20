@@ -1,10 +1,10 @@
 slave = {  # buildslave passwords are stored in the other place
-    'linux-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
-    'linux-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests' : 3 } },
-    'windows-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'windows-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'macosx-1' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
-    'macosx-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests' : 3 } },
+    'linux-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 3, 'parallel_tests-default' : 3 } },
+    'linux-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 3, 'parallel_tests-default' : 3 } },
+    'windows-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
+    'windows-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
+    'macosx-1' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
+    'macosx-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
 
     'windows-pack' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 1, 'parallel_tests' : 1 } },
 }
