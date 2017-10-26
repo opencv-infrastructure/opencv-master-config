@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 
 from twisted.internet import defer
@@ -329,6 +330,8 @@ class CommonFactory(BuilderNewStyle):
 
     @defer.inlineCallbacks
     def initialize(self):
+        builddir = self.getProperty('builddir', default='build_directory').replace('\\', '/')
+        self.env['BUILD_DIR'] = os.path.basename(builddir)
         timestamp = datetime.datetime.now()
         timestamp_str = timestamp.strftime('%Y%m%d-%H%M%S')
         prop_name = 'timestamp' if not self.hasProperty('timestamp') else 'my_timestamp'
