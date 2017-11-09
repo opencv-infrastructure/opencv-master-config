@@ -95,14 +95,14 @@ class GitHubContext(pullrequest.context.Context):
         raise Exception('invalid status', self.client.status)
 
     def getListOfAutomaticBuilders(self, pr):
-        if self.isBadBranch(pr):
+        if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
         force_builders = []
         force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
         if force_builders_parameter:
             force_builders = str(force_builders_parameter[1]).split(',')
-        if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
-            return []
+        if self.isBadBranch(pr):
+            return force_builders
         if self.isWIP(pr):
             return force_builders
         buildersList = [
