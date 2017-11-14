@@ -504,8 +504,6 @@ class CommonFactory(BuilderNewStyle):
               cpus = props.getProperty('CPUs')
               if not cpus:
                   cpus = 1
-              elif cpus > 4:
-                  cpus = 4
               if self.compiler and self.compiler.startswith('vc'):
                   command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
               else:
