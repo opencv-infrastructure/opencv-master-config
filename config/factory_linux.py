@@ -22,7 +22,7 @@ class AbiDumpCommand(ShellCommand):
             "-dump-path", resultFile,
             "-relpath", installPath,
             "-log-path", logFile,
-            "--gcc-path=gcc-4.6"]
+        ]
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"log": logFile}, **kwargs)
 
 
@@ -69,7 +69,6 @@ class AbiCompareCommand(ShellCommand):
             "-old", Interpolate("%(prop:abi_base_file)s"),
             "-new", resultFile,
             "-report-path", reportFile,
-            "--gcc-path=gcc-4.6",
             "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
                 "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
                 ".*experimental_.*",
