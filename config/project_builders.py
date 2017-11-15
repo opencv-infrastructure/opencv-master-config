@@ -435,6 +435,7 @@ addConfiguration(
             DocsPrecommit(builderName='precommit_docs', tags=['docs']),
             precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', tags=['android_pack']),
             LinuxPrecommit(builderName='precommit_cuda_linux64', dockerImage='ubuntu-cuda:16.04'),
+            LinuxPrecommit(builderName='precommit_custom_linux', dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64-icc', dockerImage='ubuntu-icc:16.04'),

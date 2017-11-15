@@ -55,6 +55,8 @@ class GitHubContext(pullrequest.context.Context):
         #windows_icc=dict(name='Win64 Intel Compiler', builders=['precommit_windows64-icc'], order=50020),
 
         cuda=dict(name='CUDA', builders=['precommit_cuda_linux64'], order=100000),
+
+        custom=dict(name='Custom', builders=['precommit_custom_linux'], order=1000000),
     )
 
     username = 'opencv'
