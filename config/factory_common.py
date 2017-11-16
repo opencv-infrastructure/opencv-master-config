@@ -253,12 +253,30 @@ class CommonFactory(BuilderNewStyle):
         yield self.initialize()
         yield self.cleanup_builddir()
         yield self.checkout_sources()
-        yield self.build()
-        yield self.after_build_steps()
-        if self.runTests and bool(self.getProperty('ci-run_tests', default=True)):
-            yield self.determineTests()
-            yield self.testAll()
-        yield self.after_tests_steps()
+        stages_str = self.getProperty('ci-stages', default=None)
+        if stages_str:
+            stages_str = str(stages_str)
+            stages = stages_str.split(',')
+            for stage in stages:
+                env = self.env.copy()
+                env['BUILD_STAGE'] = stage
+                env['BUILD_SRC_OPENCV'] = '../' + self.SRC_OPENCV
+                env['BUILD_SRC_OPENCV_EXTRA'] = '../' + self.SRC_OPENCV_EXT
+                env['BUILD_SRC_OPENCV_CONTRIB'] = '../' + self.SRC_OPENCV_CONTRIB
+                step = ShellCommand(name=stage, descriptionDone=' ', description=' ',
+                        command=self.envCmd + 'echo Stage ' + stage, env=env, workdir='build'
+                    )
+                yield self.processStep(step)
+                if self.bb_build.result != SUCCESS:
+                    break
+        else:
+            yield self.build()
+            yield self.after_build_steps()
+            if self.runTests and bool(self.getProperty('ci-run_tests', default=True)):
+                yield self.determineTests()
+                yield self.testAll()
+            yield self.after_tests_steps()
+
         if self.bb_build.result == SUCCESS and self.isPrecommit != True:
             yield self.cleanup_builddir()
 
