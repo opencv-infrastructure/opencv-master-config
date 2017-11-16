@@ -28,7 +28,7 @@ mkdir -p /app/credentials/ssh
 mkdir -p ${HOME}/.ssh
 chmod 755 ${HOME}/.ssh
 find /app/credentials/ssh -name '*.key*' -exec cp -f {} ${HOME}/.ssh/ \;
-chmod -R 600 ${HOME}/.ssh/*
+chmod -R 600 ${HOME}/.ssh/* || true
 if [ -f /app/credentials/ssh/config ]; then
   cp -f /app/credentials/ssh/config ${HOME}/.ssh/config
   chmod 600 ${HOME}/.ssh/config

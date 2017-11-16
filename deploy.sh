@@ -19,10 +19,6 @@ export BUILDBOT_MANUAL=
 EOF
 fi
 
-if [ -f deploy/.prepare_done ]; then
-  rm deploy/.prepare_done
-fi
-
 echo "Checking .create.sh ..."
 cat > .create.sh.repo <<EOF
 #!/bin/bash
@@ -37,8 +33,6 @@ SLAVE_PORT=\${SLAVE_PORT:-9989}
 OPTS="\$DOCKER_OPTS --name \${CONTAINER}"
 
 [[ -z \$CONTAINER_HOSTNAME ]] || OPTS="\$OPTS --hostname \$CONTAINER_HOSTNAME"
-
-[ ! -f deploy/.prepare_done ] || rm deploy/.prepare_done
 
 create_container() {
   docker create -it \\
