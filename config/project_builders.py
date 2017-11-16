@@ -230,6 +230,15 @@ for branch in ['2.4', 'master']:
                 SetOfBuilders(
                     factory_class=ARMv8Factory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, tags=['nightly', 'powerpc'], useName='powerpc-64le', dockerImage='powerpc64le')),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript')),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
             ] if branch != '2.4' else [])
 
         )
