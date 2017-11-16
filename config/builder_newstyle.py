@@ -1,5 +1,6 @@
 from buildbot import interfaces
 from buildbot.config import BuilderConfig
+from buildbot.process import builder
 from buildbot.process.build import Build
 from buildbot.process.buildrequest import BuildRequest
 from buildbot.process.factory import BuildFactory
@@ -154,6 +155,7 @@ class BuilderNewStyle(object, PropertiesMixin):
             mergeRequests=False,
             tags=list(set(self.getTags())),
             properties=self.getFactoryProperties(),
+            canStartBuild = builder.enforceChosenSlave,
             locks=self.locks)
 
     #
