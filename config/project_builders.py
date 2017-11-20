@@ -232,13 +232,13 @@ for branch in ['2.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
-                    init_params=dict(branch=branch, tags=['nightly', 'powerpc'], useName='powerpc-64le', dockerImage='powerpc64le')),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'powerpc'], useName='powerpc-64le', dockerImage='powerpc64le')),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
-                    init_params=dict(branch=branch, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript')),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript')),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
-                    init_params=dict(branch=branch, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
             ] if branch != '2.4' else [])
 
         )
@@ -443,7 +443,6 @@ addConfiguration(
             ARMv8Precommit(builderName='precommit_armv8', tags=['arm']),
             DocsPrecommit(builderName='precommit_docs', tags=['docs']),
             precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', tags=['android_pack']),
-            LinuxPrecommit(builderName='precommit_cuda_linux64', dockerImage='ubuntu-cuda:16.04'),
             LinuxPrecommit(builderName='precommit_custom_linux', dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
@@ -462,7 +461,7 @@ addConfiguration(
             contrib(ARMv8Precommit)(builderName='precommit-contrib_armv8', tags=['arm']),
             contrib(DocsPrecommit)(builderName='precommit-contrib_docs', tags=['docs']),
             contrib(precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory)))(builderName='precommit-contrib_pack_android', tags=['android_pack']),
-            contrib(LinuxPrecommit)(builderName='precommit-contrib_cuda_linux64', dockerImage='ubuntu-cuda:16.04'),
+            contrib(LinuxPrecommit)(builderName='precommit-contrib_custom_linux64', dockerImage='is_not_set_but_required'),
         ]
     )
 )
