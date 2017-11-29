@@ -360,6 +360,7 @@ class CommonFactory(BuilderNewStyle):
         env['BUILD_INITIALIZE'] = '1'
         step = ShellCommand(name='init', descriptionDone=' ', description=' ',
                 command=self.envCmd + 'echo Initialize', env=env, workdir='.',
+                maxTime=24*60*60, timeout=24*60*60,
                 haltOnFailure=True)
         step.addLogObserver('stdio', BuildPropertiesObserver(self))
         yield self.processStep(step)
