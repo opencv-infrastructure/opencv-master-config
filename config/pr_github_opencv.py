@@ -99,6 +99,9 @@ class GitHubContext(pullrequest.context.Context):
     def getListOfAutomaticBuilders(self, pr):
         if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
+        force_builders_only_parameter = self.extractParameterEx(pr.description, 'force_builders_only')
+        if force_builders_only_parameter:
+            return str(force_builders_only_parameter[1]).split(',')
         force_builders = []
         force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
         if force_builders_parameter:
