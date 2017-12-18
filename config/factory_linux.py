@@ -36,14 +36,14 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                     if fname in stdout:
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
-            print 'ABI: fallback to 3.3.0'
-            return {'abi_base_file':'/opt/build-worker/abi/dump-3.3.0.abi.tar.gz'}
+            print 'ABI: fallback to 3.4.0'
+            return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.0.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.0.0')
+        verString = self.getProperty('commit-description', '3.4.0')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
