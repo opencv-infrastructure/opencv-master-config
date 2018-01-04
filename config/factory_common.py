@@ -685,7 +685,11 @@ class CommonFactory(BuilderNewStyle):
                 if isBranch24(self):
                     args['logfiles'] = {"junit-report": "modules/java/test/.build/testResults/junit-noframes.html"}
                 else:
-                    args['logfiles'] = {"junit-report": "modules/java/pure_test/.build/testResults/junit-noframes.html"}
+                    args['logfiles'] = {
+                        "junit-report": "modules/java/pure_test/.build/testResults/junit-noframes.html",
+                        "junit": "java_test/testResults/junit-noframes.html",  # since Jan 2018
+                    }
+                    args['lazylogfiles'] = True
                 step = CommandTestJava(**args)
             else:
                 step = CommandTestCPP(**args)

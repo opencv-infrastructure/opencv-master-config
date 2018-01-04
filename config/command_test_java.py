@@ -9,7 +9,15 @@ class CommandTestJava(CommandTest):
 
     def createSummary(self, log):
         CommandTest.createSummary(self, log)
-        self.addHTMLLog('junit-report-html', self.getLog("junit-report").getText())
+        for name in ["junit-report", "junit"]:
+            try:
+                log = self.getLog(name)
+                content = log.getText()
+                if content:
+                    self.addHTMLLog(name + '-html', content)
+                self._step_status.getLogs().remove(log)
+            except:
+                pass
 
 class JavaUnitTestsObserver(LogLineObserver):
     test_started = re.compile(r'Running org.opencv.test.(\S+)')
