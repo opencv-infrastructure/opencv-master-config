@@ -321,7 +321,7 @@ for branch in ['2.4', 'master']:
                     variate=[
                         dict(buildShared=[True, False] if branch == '2.4' else [True]),
                         dict(is64=[True, False] if branch == '2.4' else [True]),
-                        dict(compiler=['vc14']),
+                        dict(compiler=['vc14'] if branch == '2.4' else ['vc14', 'vc15']),
                     ]
                 ),
                 SetOfBuilders(
@@ -376,7 +376,7 @@ for branch in ['2.4', 'master']:
                 variate=[
                     dict(buildShared=[True, False]),
                     dict(is64=[True, False] if branch == '2.4' else [True]),
-                    dict(compiler=['vc14']),
+                    dict(compiler=['vc14'] if branch == '2.4' else ['vc14', 'vc15']),
                 ]
             )
         )

@@ -105,6 +105,8 @@ class WinPackBuild(BaseFactory):
                 return []
             if self.compiler == 'vc14':
                 return ['windows-1', 'windows-2']
+            if self.compiler == 'vc15':
+                return ['windows-1']
         else:
             return ['linux-1', 'linux-2']
         raise Exception('Invalid configuration')
@@ -128,7 +130,7 @@ class WinPackBuild(BaseFactory):
             self.cmakepars['ENABLE_SSE'] = 'ON'
             self.cmakepars['ENABLE_SSE2'] = 'ON'
         else:
-            self.cmakepars['CPU_BASELINE'] = 'SSE2'
+            self.cmakepars['CPU_BASELINE'] = 'SSE3' if self.is64 else 'SSE2'
         self.cmakepars['WITH_TBB'] = 'OFF'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = Interpolate('%(prop:workdir)s/install')
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'
@@ -287,6 +289,8 @@ class WinPackController(PackController):
     def name(self):
         return 'winpack_controller'
 
+    def getPlatformSuffix(self):
+        return ''
 
     @defer.inlineCallbacks
     def checkout_sources(self):
@@ -336,6 +340,8 @@ class WinPackCreate(PackController):
     def name(self):
         return 'winpack_controller-create'
 
+    def getPlatformSuffix(self):
+        return ''
 
     @defer.inlineCallbacks
     def checkout_sources(self):
@@ -439,6 +445,8 @@ class WinPackUpload(PackController):
     def name(self):
         return 'winpack_controller-upload'
 
+    def getPlatformSuffix(self):
+        return ''
 
     @defer.inlineCallbacks
     def build(self):
