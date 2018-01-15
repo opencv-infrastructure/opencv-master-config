@@ -25,7 +25,7 @@ from command_test_py import CommandTestPy
 from builder_newstyle import BuilderNewStyle
 
 from build_utils import *
-from constants import PLATFORM_DEFAULT
+from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE_X
 
 from buildprops_observer import BuildPropertiesObserver
 
@@ -134,21 +134,28 @@ class CommonFactory(BuilderNewStyle):
         BuilderNewStyle.__init__(self, **kwargs)
 
         if self.useSlave is None:
-            if self.platform == PLATFORM_DEFAULT:
+            self.useSlave = []
+            if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY]:
                 if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
                     if self.is64 is None or self.is64:
-                        self.useSlave = ['linux-1', 'linux-2']
+                        self.useSlave += ['linux-1', 'linux-2']
                         #if not self.isPrecommit:
                         #    self.useSlave = ['linux-1']
                     else:
-                        self.useSlave = ['linux-1']
+                        self.useSlave += ['linux-1']
                 elif self.osType == OSType.WINDOWS:
-                    self.useSlave = ['windows-1', 'windows-2'] if self.compiler != 'vc15' else ['windows-1']
+                    self.useSlave += ['windows-1', 'windows-2'] if self.compiler != 'vc15' else ['windows-1']
                 elif self.osType == OSType.MACOSX:
-                    self.useSlave = ['macosx-1', 'macosx-2']
+                    self.useSlave += ['macosx-1', 'macosx-2']
                     #if not self.isPrecommit:
                     #    self.useSlave = ['macosx-1']
-
+            if self.platform in [PLATFORM_SKYLAKE_X, PLATFORM_ANY]:
+                if self.osType == OSType.LINUX:
+                    if self.is64 is None or self.is64:
+                        self.useSlave += ['linux-3']
+            if self.useSlave == []:
+                self.useSlave = None
+           
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
         else:
@@ -312,7 +319,7 @@ class CommonFactory(BuilderNewStyle):
 
     def getPlatformSuffix(self):
         name = ''
-        if self.platform and self.platform != PLATFORM_DEFAULT:
+        if self.platform and self.platform not in [PLATFORM_DEFAULT, PLATFORM_ANY]:
             name = '-' + self.platform
         if self.osType:
             name += '-' + OSType.suffix[self.osType]

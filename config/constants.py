@@ -1,6 +1,7 @@
-slave = {  # buildslave passwords are stored in the other place
+worker = {  # worker passwords are stored in the other place
     'linux-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'linux-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
+    'linux-3' : { 'max_builds' : 3, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 4 } },
     'windows-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'windows-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'macosx-1' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
@@ -9,7 +10,9 @@ slave = {  # buildslave passwords are stored in the other place
     'windows-pack' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 1, 'parallel_tests' : 1 } },
 }
 
+PLATFORM_ANY = 'any'
 PLATFORM_DEFAULT = 'default'
+PLATFORM_SKYLAKE_X = 'skx'  # with AVX512
 
 # Git mirror repository
 URL_GIT_BASE = r'git://code.ocv/opencv/'

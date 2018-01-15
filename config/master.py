@@ -28,7 +28,7 @@ c['eventHorizon'] = 50
 import project_builders
 
 c['status'] = []
-c['slaves'] = project_builders.slaves
+c['slaves'] = project_builders.workers
 c['builders'] = project_builders.builders
 c['schedulers'] = project_builders.schedulers
 

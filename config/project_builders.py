@@ -5,7 +5,7 @@ from build_utils import WinCompiler
 print "Configure builds..."
 
 import constants
-from constants import trace, PLATFORM_DEFAULT
+from constants import trace, PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE_X
 
 import buildbot_passwords
 from buildbot.buildslave import BuildSlave
@@ -13,14 +13,21 @@ from buildbot.buildslave import BuildSlave
 INTEL_COMPILER_TOOLSET_CURRENT=('-icc17', '"Intel C++ Compiler 17.0"')
 INTEL_COMPILER_DOCKER_CURRENT=('-icc17', 'ubuntu-icc:16.04')
 
-slaves = []
-for slave in constants.slave:
-    trace("Register slave: " + slave + " with passwd=*** and params=(%s)" % constants.slave[slave])
-    slaves.append(BuildSlave(slave, buildbot_passwords.slave[slave], **(constants.slave[slave])))
+workers = []
+for worker in constants.worker:
+    trace("Register worker: " + worker + " with passwd=*** and params=(%s)" % constants.worker[worker])
+    workers.append(BuildSlave(worker, buildbot_passwords.worker[worker], **(constants.worker[worker])))
 
 platforms = [
     PLATFORM_DEFAULT,
-    ]
+    PLATFORM_SKYLAKE_X,
+]
+
+def platformParameter(branch, **params):
+    isContrib = params.get('isContrib', None)
+    if branch == '2.4' or isContrib:
+        return [PLATFORM_DEFAULT]
+    return platforms
 
 PlatformWindowsCompiler = {
     PLATFORM_DEFAULT: [WinCompiler.VC14], #, WinCompiler.VC15],
@@ -29,6 +36,8 @@ PlatformWindowsCompiler = {
 def osTypeParameter(platform, **params):
     if platform == PLATFORM_DEFAULT:
         return OSType.all
+    if platform == PLATFORM_SKYLAKE_X:
+        return [OSType.LINUX]
     assert False
 
 def androidABIParameter(platform, osType, **params):
@@ -52,6 +61,8 @@ def androidParameters():
 def is64ParameterCheck(platform, osType, **params):
     if osType == OSType.ANDROID:
         return [None]
+    if platform == PLATFORM_SKYLAKE_X:
+        return [True]
     if platform in ['xxxxx']:
         return [False]
     if osType == OSType.WINDOWS:
@@ -93,6 +104,8 @@ def useIPPParameter(branch, platform, osType, compiler, **params):
     return res
 
 def useSSEParameter(branch, platform, osType, compiler, useIPP, **params):
+    if platform == PLATFORM_SKYLAKE_X:
+        return [None]
     is64 = params.get('is64', True)
     if useIPP != False:
         return [None]
@@ -105,6 +118,8 @@ def useSSEParameter(branch, platform, osType, compiler, useIPP, **params):
     return [None]
 
 def useOpenCLParameter(platform, osType, compiler, **params):
+    if platform == PLATFORM_SKYLAKE_X:
+        return [True, False]
     is64 = params.get('is64', None)
     useSSE = params.get('useSSE', None)
     if osType == OSType.ANDROID:
@@ -129,12 +144,16 @@ def testOpenCLParameter(platform, osType, compiler, useOpenCL, **params):
     return [useOpenCL]
 
 def useDebugParameter(platform, osType, compiler, useIPP, **params):
+    if platform == PLATFORM_SKYLAKE_X:
+        return [None]
     useSSE = params.get('useSSE', None)
     if useSSE != False or platform != PLATFORM_DEFAULT:
         return [None]
     return [None, True]
 
 def useShared(branch, platform, osType, useIPP, **params):
+    if platform == PLATFORM_SKYLAKE_X:
+        return [True]
     is64 = params.get('is64', None)
     compiler = params.get('compiler', None)
     isDebug = params.get('isDebug', None)
@@ -188,7 +207,7 @@ for branch in ['2.4', 'master']:
                     factory_class=OpenCVBuildFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly']),
                     variate=[
-                        dict(platform=platforms),
+                        dict(platform=platformParameter),
                         dict(osType=osTypeParameter),
                     ] + androidParameters() + [
                         dict(is64=is64ParameterCheck),
@@ -218,7 +237,7 @@ for branch in ['2.4', 'master']:
                 ),
                 SetOfBuilders(
                     factory_class=CoverageFactory,
-                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'coverage'], platform=PLATFORM_DEFAULT,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'coverage'], platform=PLATFORM_ANY,
                                      osType=OSType.LINUX, isDebug=True, useName='coverage')
                 ),
                 SetOfBuilders(
@@ -231,13 +250,13 @@ for branch in ['2.4', 'master']:
                     factory_class=ARMv8Factory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)),
                 SetOfBuilders(
-                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'powerpc'], useName='powerpc-64le', dockerImage='powerpc64le')),
                 SetOfBuilders(
-                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript')),
                 SetOfBuilders(
-                    factory_class=linux(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)),
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
             ] if branch != '2.4' else [])
 
@@ -271,7 +290,7 @@ for branch in ['2.4', 'master']:
                         factory_class=OpenCVBuildFactory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly']),
                         variate=[
-                            dict(platform=platforms),
+                            dict(platform=platformParameter),
                             dict(osType=osTypeParameter),
                         ] + androidParameters() + [
                             dict(is64=is64ParameterCheck),
@@ -406,16 +425,16 @@ for branch in ['2.4', 'master']:
 
 precommitFactory = precommit(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory))
 precommitFactory = IPP_ICV(precommitFactory)
-LinuxPrecommit = precommit(platform(PLATFORM_DEFAULT)(LinuxPrecommitFactory))
+LinuxPrecommit = precommit(platform(PLATFORM_ANY)(LinuxPrecommitFactory))
 WindowsPrecommit64 = windows(precommitFactory)
 WindowsPrecommit32 = windows32(precommitFactory)
 MacOSXPrecommit = macosx(OpenCL_noTest(precommitFactory))
 AndroidPrecommit = android(precommitFactory)
 OCLPrecommit = windows(OpenCL(precommitFactory))
-OCLLinuxPrecommit = linux(OpenCL(precommitFactory))
+OCLLinuxPrecommit = linux(OpenCL(platform(PLATFORM_DEFAULT)(precommitFactory)))
 OCLMacPrecommit = macosx(OpenCL(precommitFactory))
 LinuxPrecommitNoOpt = LinuxPrecommit
-DocsPrecommit = linux(precommit(platform(PLATFORM_DEFAULT)(factory_docs.Docs_factory)))
+DocsPrecommit = linux(precommit(platform(PLATFORM_ANY)(factory_docs.Docs_factory)))
 ARMv7Precommit = linux(precommit(platform(PLATFORM_DEFAULT)(ARMv7Factory)))
 ARMv8Precommit = linux(precommit(platform(PLATFORM_DEFAULT)(ARMv8Factory)))
 iOSPrecommit = precommit(platform(PLATFORM_DEFAULT)(iOSFactory))
@@ -426,12 +445,12 @@ addConfiguration(
         builders=[
             LinuxPrecommit(builderName='precommit_linux64'),
             linux32(LinuxPrecommit)(builderName='precommit_linux32', buildWithContrib=False),
-            LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
+            #LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
             OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_HALIDE':'ON', 'WITH_TBB':'ON'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False),
             WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit64(builderName='precommit_windows64'),
-            WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
+            #WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
             OCLPrecommit(builderName='precommit_opencl', cmake_parameters={'XWITH_TBB':'ON', 'XBUILD_TBB':'ON'}),
             OCLPrecommit(builderName='precommit_opencl-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit32(builderName='precommit_windows32'),
@@ -446,11 +465,11 @@ addConfiguration(
             LinuxPrecommit(builderName='precommit_custom_linux', dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
-            contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64-icc', dockerImage='ubuntu-icc:16.04'),
+            #contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64-icc', dockerImage='ubuntu-icc:16.04'),
             contrib(OCLLinuxPrecommit)(builderName='precommit-contrib_opencl_linux', dockerImage='ubuntu:16.04'),
             contrib(LinuxPrecommitNoOpt)(builderName='precommit-contrib_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True),
             contrib(WindowsPrecommit64)(builderName='precommit-contrib_windows64'),
-            contrib(WindowsPrecommit64)(builderName='precommit-contrib_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
+            #contrib(WindowsPrecommit64)(builderName='precommit-contrib_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
             contrib(OCLPrecommit)(builderName='precommit-contrib_opencl'),
             contrib(WindowsPrecommit32)(builderName='precommit-contrib_windows32'),
             contrib(MacOSXPrecommit)(builderName='precommit-contrib_macosx'),
