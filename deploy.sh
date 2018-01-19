@@ -30,9 +30,9 @@ ALLOW_STOP=0 # Use Web UI or allow "docker stop <container>"
 HTTP_PORT=\${HTTP_PORT:-8010}
 SLAVE_PORT=\${SLAVE_PORT:-9989}
 
-OPTS="\$DOCKER_OPTS --name \${CONTAINER}"
-
-[[ -z \$CONTAINER_HOSTNAME ]] || OPTS="\$OPTS --hostname \$CONTAINER_HOSTNAME"
+. docker_utils.sh  # updates OPTS variable
+docker_mount_add credentials/htpasswd /etc/buildbot/htpasswd ro
+docker_mount_finalize || exit 1
 
 create_container() {
   docker create -it \\
@@ -41,7 +41,6 @@ create_container() {
     -p \${SLAVE_PORT}:9989 \\
     -v \${P}:/app \\
     -v \${P}_data/master:/data \\
-    -v \${P}/credentials/htpasswd:/etc/buildbot/htpasswd:ro \\
     \${IMAGE}
 }
 EOF
