@@ -479,6 +479,9 @@ class CommonFactory(BuilderNewStyle):
         if self.getProperty('build_cxxflags', default=None):
             self.cmakepars['CMAKE_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags', default='')
 
+        if self.getProperty('build_cxxflags_extra', default=None):
+            self.cmakepars['OPENCV_EXTRA_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags_extra', default='')
+
         if self.getProperty('build_tbb', default=None):
             self.cmakepars['BUILD_TBB'] = 'ON' if self.getProperty('build_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
 

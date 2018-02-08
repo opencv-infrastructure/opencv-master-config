@@ -195,6 +195,8 @@ class GitHubContext(pullrequest.context.Context):
             self.pushBuildProperty(properties, pr.description, 'build_examples', 'build_examples')
             if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS[-:]' + re_builder, 'build_cxxflags') is None:
                 self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
+            if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA[-:]' + re_builder, 'build_cxxflags_extra') is None:
+                self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA', 'build_cxxflags_extra')
 
         self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
 
