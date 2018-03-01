@@ -166,8 +166,10 @@ def useShared(branch, platform, osType, useIPP, **params):
         enableStatic = False
     return [True, False] if enableStatic else [True]
 
-def availableDockerImage(platform, osType, **params):
+def availableDockerImage(platform, osType, testOpenCL, **params):
     if osType == OSType.LINUX:
+        if platform == PLATFORM_SKYLAKE_X and testOpenCL:
+            return [(None, 'ubuntu:16.04')]
         return [None] #, INTEL_COMPILER_DOCKER_CURRENT]
     else:
         return [None]
