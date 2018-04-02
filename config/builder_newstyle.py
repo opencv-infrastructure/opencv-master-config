@@ -44,7 +44,7 @@ class BuildFactoryWrapper(BuildFactory):
 
             def run(self):
                 self.me_.steps = self.steps
-                return self.me_.run()
+                return self.me_.run_()
 
 
             def runCleanup(self):
@@ -100,6 +100,19 @@ class BuilderNewStyle(object, PropertiesMixin):
         Here we can populate "static" set of build steps
         '''
         self.fillStaticSteps()
+        pass
+
+
+    @defer.inlineCallbacks
+    def run_(self):
+        yield self.runPrepare()
+        yield self.run()
+        pass
+
+
+    @defer.inlineCallbacks
+    def runPrepare(self):
+        yield None
         pass
 
 

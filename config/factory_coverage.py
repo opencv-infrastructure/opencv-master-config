@@ -29,20 +29,23 @@ class GenHTML(ShellCommand):
 class CoverageFactory(ParentClass):
     def __init__(self, **kwargs):
         useSlave = ['linux-1']
+        branch = kwargs.get('branch', 'master')
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
-        kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'coverage'))
+        kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'coverage' if branch != '2.4' else 'coverage:14.04'))
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks
-    def initialize(self):
+    def runPrepare(self):
+        yield ParentClass.runPrepare(self)
         self.setProperty('parallel_tests', 1)
-        self.setProperty('CPUs', 1)
-        yield ParentClass.initialize(self)
+        self.setProperty('CPUs', 2)  # high memory usage
 
     def set_cmake_parameters(self):
         ParentClass.set_cmake_parameters(self)
         self.cmakepars['ENABLE_COVERAGE'] = 'ON'
         self.cmakepars['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'
+        self.cmakepars['CPU_BASELINE'] = 'HOST'
+        self.cmakepars['CPU_DISPATCH'] = ''
 
     @defer.inlineCallbacks
     def testAll(self):
@@ -99,17 +102,19 @@ class CoverageFactory(ParentClass):
                 '/usr/include/*',
                 '/usr/lib/*',
                 '/usr/local/include/*',
-                'opencv/apps/*',
-                'opencv/samples/*',
-                'opencv/3rdparty/*',
-                'opencv/modules/ts/*',
-                'opencv/modules/*/perf/*',
-                'opencv/modules/*/test/*',
-                'opencv/modules/*/samples/*',
-                'opencv_contrib/modules/*/perf/*',
-                'opencv_contrib/modules/*/test/*',
-                'opencv_contrib/modules/*/samples/*',
-                'opencv/*' if self.isContrib else 'opencv_contrib/*',
+                '*/opencv/apps/*',
+                '*/opencv/samples/*',
+                '*/opencv/3rdparty/*',
+                '*/opencv/modules/ts/*',
+                '*/opencv/modules/*/perf/*',
+                '*/opencv/modules/*/test/*',
+                '*/opencv/modules/*/samples/*',
+                '*/build/modules/java_bindings_generator/*',
+                '*/build/modules/python_bindings_generator/*',
+                '*/opencv_contrib/modules/*/perf/*',
+                '*/opencv_contrib/modules/*/test/*',
+                '*/opencv_contrib/modules/*/samples/*',
+                '*/opencv/*' if self.isContrib else '*/opencv_contrib/*',
                 '-o', 'opencv_filtered.info'],
             workdir='build',
             env=self.env,

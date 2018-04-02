@@ -43,7 +43,7 @@ class Docs_factory(BaseFactory):
         useName = kwargs.pop('useName', 'docs')
         dockerImage = kwargs.pop('dockerImage', (None, 'docs'))
         BaseFactory.__init__(self, *args, useName=useName, buildDocs=True, runTests=False, dockerImage=dockerImage, **kwargs)
-        if not self.isPrecommit and self.branch == 'master':
+        if not self.isPrecommit and self.branch != '2.4':
             self.dockerImage = (None, 'docs-js')
 
     def set_cmake_parameters(self):
@@ -51,7 +51,7 @@ class Docs_factory(BaseFactory):
         self.cmakepars['WITH_IPP'] = 'OFF'  # Don't download ICV package
 
     def shouldUpload(self):
-        return not self.isPrecommit and ((self.branch == 'master' and self.isContrib) or self.branch == '2.4')
+        return not self.isPrecommit and ((self.branch in ['3.4', 'master'] and self.isContrib) or self.branch == '2.4')
 
     def getCodebasePath(self, codebase):
         res = {
@@ -88,7 +88,7 @@ class Docs_factory(BaseFactory):
         yield self.compile(target='doxygen', desc='make doxygen', suppressionFile="../%s/doc/disabled_doc_warnings.txt" % self.SRC_OPENCV)
 
         if self.isPrecommit:
-            if not isBranch24(self):
+            if isNotBranch24(self):
                 yield self.compile(target='check_pylint', desc='Pylint', warningPattern=re.compile(r'^warning[: ].*', re.I | re.S))
 
 

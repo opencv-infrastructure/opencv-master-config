@@ -40,6 +40,7 @@ class CodeBase:
 codebase = { }
 codebase['master'] = CodeBase('master')
 codebase['2.4'] = CodeBase('2.4')
+codebase['3.4'] = CodeBase('3.4')
 codebase['branch'] = CodeBase('master')
 
 import re
@@ -53,13 +54,3 @@ def params_without_passwords(params):
         if re.match(r'.*(pwd|pass|password|login|user).*', i):
             safe_params[i] = "*****"
     return safe_params
-
-import os
-if os.environ.get('DEBUG_HOST', None) == '':
-    del os.environ['DEBUG_HOST']
-if os.environ.get('DEBUG_PORT', None) == '':
-    del os.environ['DEBUG_PORT']
-DEBUG_HOST = os.environ.get('DEBUG_HOST', '172.17.42.1')
-DEBUG_PORT = int(os.environ.get('DEBUG_PORT', '5678'))
-DEBUG_SUSPEND = bool(os.environ.get('DEBUG_SUSPEND', 'False'))
-DEBUG_URL = 'dev_enable_debug'

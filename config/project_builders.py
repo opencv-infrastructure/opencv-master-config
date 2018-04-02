@@ -200,7 +200,7 @@ def addConfiguration(descriptor):
     schedulers = schedulers + new_schedulers
 
 # Nightly builders
-for branch in ['2.4', 'master']:
+for branch in ['2.4', '3.4', 'master']:
     addConfiguration(
         SetOfBuildersWithSchedulers(branch=branch, nameprefix='check-',
             genForce=True, genNightly=True, nightlyHour=21,
@@ -229,6 +229,7 @@ for branch in ['2.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'docs'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.LINUX)
                 ),
+            ] + ([
                 SetOfBuilders(
                     factory_class=iOSFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'ios_pack'], platform=PLATFORM_DEFAULT)
@@ -246,8 +247,7 @@ for branch in ['2.4', 'master']:
                     factory_class=AndroidPackFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.ANDROID, is64=True, useName='pack')
-                )
-            ] + ([
+                ),
                 SetOfBuilders(
                     factory_class=ARMv8Factory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)),
@@ -268,7 +268,26 @@ for branch in ['2.4', 'master']:
         SetOfBuildersWithSchedulers(
             branch=branch, nameprefix='weekly-',
             genForce=True, genNightly=True, nightlyHour=5, dayOfWeek=5,
-            builders=[
+            builders=([
+                SetOfBuilders(
+                    factory_class=iOSFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'ios_pack'], platform=PLATFORM_DEFAULT)
+                ),
+                SetOfBuilders(
+                    factory_class=ARMv7Factory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'arm'], platform=PLATFORM_DEFAULT)
+                ),
+                SetOfBuilders(
+                    factory_class=CoverageFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'coverage'], platform=PLATFORM_ANY,
+                                     osType=OSType.LINUX, isDebug=True, useName='coverage')
+                ),
+                SetOfBuilders(
+                    factory_class=AndroidPackFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'android_pack'], platform=PLATFORM_DEFAULT,
+                                     osType=OSType.ANDROID, is64=True, useName='pack')
+                ),
+            ] if branch == '2.4' else []) + [
                 SetOfBuilders(
                     factory_class=ValgrindFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'valgrind'], platform=PLATFORM_DEFAULT,
@@ -285,7 +304,7 @@ for branch in ['2.4', 'master']:
     if branch != '2.4':
         addConfiguration(
             SetOfBuildersWithSchedulers(branch=branch, nameprefix='checkcontrib-',
-                genForce=True, genNightly=True, nightlyHour=21,
+                genForce=True, genNightly=True, nightlyHour=22, dayOfWeek = 6 if branch != 'master' else '*',
                 builders=[
                     # OpenCV Contrib
                     SetOfBuilders(
@@ -323,11 +342,12 @@ for branch in ['2.4', 'master']:
                         factory_class=ARMv8Factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)
                     ),
+                ] + ([
                     SetOfBuilders(
                         factory_class=CoverageFactory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'coverage', 'contrib'], platform=PLATFORM_DEFAULT,
                                          osType=OSType.LINUX, isDebug=True, useName='coverage')),
-                ]
+                ] if branch == 'master' else [])
             )
         )
 
@@ -423,6 +443,7 @@ for branch in ['2.4', 'master']:
     #    )
     #)
 
+# end: for branch in ['2.4', '3.4', 'master']
 
 
 precommitFactory = precommit(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory))

@@ -7,7 +7,7 @@ from buildbot.steps.shell import ShellCommand, SetPropertyFromCommand, Compile
 from buildbot.steps.slave import RemoveDirectory, MakeDirectory
 from buildbot.process.properties import Interpolate
 
-from build_utils import OSType, isNotBranch24, isBranch24
+from build_utils import OSType, isNotBranch24, isBranch24, isBranch34
 from factory_ocl import OCL_factory as BaseFactory
 
 
@@ -117,7 +117,7 @@ class LinuxPrecommitFactory(BaseFactory):
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
-        if not isBranch24(self):
+        if isBranch34(self):
             self.cmakepars['GENERATE_ABI_DESCRIPTOR'] = 'ON'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = self.installPath
 
@@ -128,7 +128,7 @@ class LinuxPrecommitFactory(BaseFactory):
         yield BaseFactory.compile(self, config='debug' if self.isDebug else 'release', target='install')
         if isNotBranch24(self):
             yield self.check_build()
-            if not self.isContrib:
+            if isBranch34(self) and not self.isContrib:
                 if bool(self.getProperty('ci-run_abi_check', default=True)):
                     yield self.check_abi()
 

@@ -10,6 +10,7 @@ class ValgrindFactory(ParentClass):
         cmake_parameters['CMAKE_CXX_FLAGS'] = '"-g -O1"'
         cmake_parameters['CPU_DISPATCH'] = ''
         cmake_parameters['CPU_BASELINE'] = 'AVX'
+        cmake_parameters['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'
         kwargs['cmake_parameters'] = cmake_parameters
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
         kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'valgrind'))

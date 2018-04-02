@@ -25,6 +25,13 @@ class OCL_factory(BaseFactory):
         self.cmakepars['WITH_OPENCL'] = 'ON' if self.buildOpenCL else 'OFF'
         self.cmakepars['WITH_CUDA'] = 'OFF'
 
+    @defer.inlineCallbacks
+    def runPrepare(self):
+        yield BaseFactory.runPrepare(self)
+
+        if isBranch24(self):
+            self.testOpenCL = False
+
     def _getOpenCLDeviceMap(self):
         assert not (self.platform is None or self.platform == '')
         if self.platform in [PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE_X]:
@@ -52,7 +59,7 @@ class OCL_factory(BaseFactory):
 
     def getTestBlacklist(self, isPerf=False):
         res = BaseFactory.getTestBlacklist(self, isPerf)
-        if not self.testOpenCL and isBranch24(self):
+        if not self.testOpenCL or isBranch24(self):
             res.append("ocl")
         return res
 

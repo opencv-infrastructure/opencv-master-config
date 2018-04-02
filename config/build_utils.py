@@ -44,7 +44,7 @@ class WinCompiler:
         return cmake_generator
 
 def getDocPackScript(osType):
-    # on slave
+    # on worker
     if osType == OSType.LINUX:
         return "/app/scripts/pack_docs.py"
     elif osType == OSType.MACOSX:
@@ -93,6 +93,15 @@ def isBranch24(self):
 
 def isNotBranch24(self):
     return not isBranch24(self)
+
+def isBranch34(self):
+    return self.getProperty('branch', default='master').startswith("3.4")
+
+def isNotBranch34(self):
+    return not isBranch34(self)
+
+def isBranchMaster(self):
+    return not isBranch24(self) and not isBranch34(self)
 
 def hideStepIfFn(result, s):
     return result not in [SUCCESS, WARNINGS, FAILURE, EXCEPTION, RETRY]

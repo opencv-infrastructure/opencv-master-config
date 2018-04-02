@@ -151,7 +151,7 @@ class GitHubContext(pullrequest.context.Context):
         defer.returnValue(True)
 
     def isBadBranch(self, pr):
-        return pr.head_branch == 'master' or pr.head_branch == '2.4'
+        return pr.head_branch in ['master', '2.4', '3.4']
 
     def isWIP(self, pr):
         if hasattr(pr, 'description') and pr.description:

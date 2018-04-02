@@ -23,7 +23,7 @@ class IPP_factory(CommonFactory):
         name = CommonFactory.name(self)
         ippsuffix = ''
         if self.useIPP is not None:
-            if self.branch == 'master':
+            if self.branch != '2.4':
                 ippsuffix = 'noICV' if self.useIPP == False else (self.useIPP if self.useIPP != 'ICV' else '')
             elif self.branch is not None and self.branch.startswith('2.4'):
                 ippsuffix = 'IPP' if self.useIPP else ''

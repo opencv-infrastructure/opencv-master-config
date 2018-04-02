@@ -122,14 +122,6 @@ class CommonFactory(BuilderNewStyle):
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
         self.dockerImage = kwargs.pop('dockerImage', None)
-        if self.dockerImage is None:
-            if self.osType == OSType.LINUX:
-                self.dockerImage = (None, 'ubuntu:14.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
-            elif self.osType == OSType.ANDROID:
-                self.dockerImage = (None, 'android:14.04')
-            else:
-                # not applicable
-                pass
 
         BuilderNewStyle.__init__(self, **kwargs)
 
@@ -166,6 +158,21 @@ class CommonFactory(BuilderNewStyle):
         BuilderNewStyle.onNewBuild(self)
         self.env = self.env.copy()
         self.cmakepars = self.cmakepars.copy()
+
+    @defer.inlineCallbacks
+    def runPrepare(self):
+        yield BuilderNewStyle.runPrepare(self)
+
+        if self.dockerImage is None:
+            if self.osType == OSType.LINUX:
+                default_docker = (None, 'ubuntu:14.04') if not isBranchMaster(self) else (None, 'ubuntu:16.04')
+                self.dockerImage = default_docker if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+            elif self.osType == OSType.ANDROID:
+                self.dockerImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android')
+            else:
+                # not applicable
+                pass
+
         if self.isPrecommit:
             prefix = self.bb_requests[0].properties.getProperty('branch', default=None)
             if prefix and prefix != 'master':
@@ -183,11 +190,15 @@ class CommonFactory(BuilderNewStyle):
         res = list(BuilderNewStyle.getTags(self))
 
         # takes one of 'master', 'master-contrib', '2.4'
-        second = 'master'
-        if self.isContrib:
-            second = 'master-contrib'
-        elif self.branch == '2.4':
-            second='2.4'
+        if self.branch == '2.4':
+            second = '2.4'
+        elif self.branch == '3.4':
+            second = '3.4'
+        else:
+            second = 'master'
+
+        if self.isContrib and self.branch != '2.4':
+            second += '-contrib'
 
         third = 'main'
         if self.isContrib:
@@ -458,7 +469,7 @@ class CommonFactory(BuilderNewStyle):
         if self.isDebug:
             self.cmakepars['CMAKE_BUILD_TYPE'] = 'Debug'
 
-        if self.osType == OSType.LINUX and not isBranch24(self):
+        if self.osType == OSType.LINUX and isNotBranch24(self):
             self.cmakepars['WITH_OPENNI2'] = 'ON'
             self.cmakepars['WITH_GDAL'] = 'ON'
             self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3'
@@ -470,7 +481,7 @@ class CommonFactory(BuilderNewStyle):
         if self.buildWithContrib:
             self.cmakepars['OPENCV_EXTRA_MODULES_PATH'] = self.getProperty('workdir') + '/' + self.SRC_OPENCV_CONTRIB + '/modules'
 
-        if self.isPrecommit and not isBranch24(self):
+        if self.isPrecommit and isNotBranch24(self):
             self.cmakepars['OPENCV_ENABLE_NONFREE'] = 'ON'
 
         if self.getProperty('build_world', default=None):
@@ -530,13 +541,13 @@ class CommonFactory(BuilderNewStyle):
             if useClean:
                 command += ' --clean-first'
             if runParallel:
-              cpus = props.getProperty('CPUs')
-              if not cpus:
-                  cpus = 1
-              if self.compiler and self.compiler.startswith('vc'):
-                  command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
-              else:
-                  command += ' -- -j%s' % cpus
+                cpus = props.getProperty('CPUs')
+                if not cpus:
+                    cpus = 1
+                if self.compiler and self.compiler.startswith('vc'):
+                    command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
+                else:
+                    command += ' -- -j%s' % cpus
             return command
 
         if desc is None:
