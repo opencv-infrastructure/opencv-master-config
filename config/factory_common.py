@@ -158,7 +158,7 @@ class CommonFactory(BuilderNewStyle):
            
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
-        else:
+        elif self.isDebug:
             self.cmakepars['ENABLE_CCACHE'] = 'OFF'
 
 
