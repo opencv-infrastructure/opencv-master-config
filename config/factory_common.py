@@ -549,6 +549,7 @@ class CommonFactory(BuilderNewStyle):
                     warningPattern=warningPattern,
                     warnOnWarnings=True, haltOnFailure=True,
                     suppressionFile=suppressionFile, **kwargs)
+        step.addSuppression([[None, re.compile('[apkbuilder]'), None, None]])  # warning: "The JKS keystore uses a proprietary format"
         yield self.processStep(step)
 
     def getModuleAccuracyTestFilter(self, module):
