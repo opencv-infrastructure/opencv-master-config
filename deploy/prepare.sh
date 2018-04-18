@@ -10,6 +10,7 @@ virtualenv --system-site-packages /env
 
 set -x
 
+pip install -U pip wheel setuptools
 pip install pyOpenSSL
 
 (
