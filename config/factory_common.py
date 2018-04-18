@@ -303,6 +303,15 @@ class CommonFactory(BuilderNewStyle):
     def runCleanup(self):
         # TODO Forced cleanup: yield self.cleanup_builddir()
         env = self.env.copy()
+        env['BUILD_FINALIZE'] = '1'
+        env['BUILD_SRC_OPENCV'] = self.SRC_OPENCV
+        env['BUILD_SRC_OPENCV_EXTRA'] = self.SRC_OPENCV_EXT
+        env['BUILD_SRC_OPENCV_CONTRIB'] = self.SRC_OPENCV_CONTRIB
+        step = ShellCommand(name='finalize', descriptionDone=' ', description=' ',
+                command=self.envCmd + 'echo Finalize', env=env, workdir='.',
+                alwaysRun=True)
+        yield self.processStep(step)
+        del env['BUILD_FINALIZE']
         env['BUILD_CLEANUP'] = '1'
         step = ShellCommand(name='cleanup', descriptionDone=' ', description=' ',
                 command=self.envCmd + 'echo Cleanup', env=env, workdir='.',
