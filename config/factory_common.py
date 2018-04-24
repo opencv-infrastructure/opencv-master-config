@@ -121,6 +121,7 @@ class CommonFactory(BuilderNewStyle):
         self.cmake_toolset = kwargs.pop('cmake_toolset', None) # (builder suffix, toolset value)
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
+        self.suppressions = None
         self.dockerImage = kwargs.pop('dockerImage', None)
 
         BuilderNewStyle.__init__(self, **kwargs)
@@ -185,6 +186,9 @@ class CommonFactory(BuilderNewStyle):
         if self.dockerImage:
             dockerImageName = self.dockerImage[1] if isinstance(self.dockerImage, (list, tuple)) else self.dockerImage
             self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', dockerImageName))
+
+        if self.osType == OSType.ANDROID and self.suppressions is None:
+            self.suppressions = [[None, re.compile('[apkbuilder]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
 
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))
@@ -541,7 +545,9 @@ class CommonFactory(BuilderNewStyle):
 
 
     @defer.inlineCallbacks
-    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True, warningPattern=None, suppressionFile=None, runParallel=True, **kwargs):
+    def compile(self, builddir='build', config='release', target=None, useClean=False, desc=None, doStepIf=True,
+                warningPattern=None, suppressionFile=None, suppressions=None,
+                runParallel=True, **kwargs):
         @renderer
         def compileCommand(props):
             command = '%s cmake --build . --config %s' % (self.envCmd, config)
@@ -569,7 +575,8 @@ class CommonFactory(BuilderNewStyle):
                     warningPattern=warningPattern,
                     warnOnWarnings=True, haltOnFailure=True,
                     suppressionFile=suppressionFile, **kwargs)
-        step.addSuppression([[None, re.compile('[apkbuilder]'), None, None]])  # warning: "The JKS keystore uses a proprietary format"
+        if suppressions or self.suppressions:
+            step.addSuppression((suppressions or []) + (self.suppressions or []))
         yield self.processStep(step)
 
     def getModuleAccuracyTestFilter(self, module):
