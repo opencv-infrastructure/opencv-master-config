@@ -269,7 +269,7 @@ class GitHubContext(pullrequest.context.Context):
         try:
             if hasattr(self, 'statusRepoId'):
                 pr = yield self.db.prcc.getPullRequest(prid)
-        
+
                 c = JSONClient("http://master.ocv/api", userAgent=userAgent)
                 res = yield c.queryFast.get(prId=prid, repoId=self.statusRepoId)
 

@@ -148,7 +148,7 @@ class CommonFactory(BuilderNewStyle):
                         self.useSlave += ['linux-3']
             if self.useSlave == []:
                 self.useSlave = None
-           
+
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
         elif self.isDebug:
