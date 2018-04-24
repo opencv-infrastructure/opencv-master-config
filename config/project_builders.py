@@ -297,6 +297,10 @@ for branch in ['2.4', '3.4', 'master']:
                     factory_class=ValgrindFactory,
                     init_params=dict(branch=branch, tags=['weekly', 'valgrind'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.LINUX, isDebug=True, useName='valgrind', isContrib=True)),
+                SetOfBuilders(
+                    factory_class=CoverageFactory,
+                    init_params=dict(isContrib=True, branch=branch, tags=['weekly', 'coverage', 'contrib'], platform=PLATFORM_DEFAULT,
+                                     osType=OSType.LINUX, isDebug=True, useName='coverage')),
             ] if branch != '2.4' else [])
         )
     )
@@ -342,12 +346,7 @@ for branch in ['2.4', '3.4', 'master']:
                         factory_class=ARMv8Factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)
                     ),
-                ] + ([
-                    SetOfBuilders(
-                        factory_class=CoverageFactory,
-                        init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'coverage', 'contrib'], platform=PLATFORM_DEFAULT,
-                                         osType=OSType.LINUX, isDebug=True, useName='coverage')),
-                ] if branch == 'master' else [])
+                ]
             )
         )
 
