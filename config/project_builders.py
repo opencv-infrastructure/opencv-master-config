@@ -483,7 +483,7 @@ addConfiguration(
             ARMv7Precommit(builderName='precommit_armv7', tags=['arm']),
             ARMv8Precommit(builderName='precommit_armv8', tags=['arm']),
             DocsPrecommit(builderName='precommit_docs', tags=['docs']),
-            precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', tags=['android_pack']),
+            precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack']),
             LinuxPrecommit(builderName='precommit_custom_linux', dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),

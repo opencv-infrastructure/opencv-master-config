@@ -110,8 +110,8 @@ class CommonFactory(BuilderNewStyle):
         self.runTests = kwargs.pop('runTests', True)
         self.isPrecommit = kwargs.pop('isPrecommit', False)
         self.isPerf = kwargs.pop('isPerf', False)
-        self.buildWithContrib = kwargs.pop('buildWithContrib', self.branch != '2.4') # Build with opencv_contrib
         self.isContrib = kwargs.pop('isContrib', False)
+        self.buildWithContrib = kwargs.pop('buildWithContrib', self.isContrib or self.branch != '2.4')  # Build with opencv_contrib
         self.envCmd = kwargs.pop('envCmd', 'buildenv')
         self.env = kwargs.pop('env', {}).copy()
         self.env['PYTHONDONTWRITEBYTECODE'] = '1'
@@ -163,6 +163,8 @@ class CommonFactory(BuilderNewStyle):
     @defer.inlineCallbacks
     def runPrepare(self):
         yield BuilderNewStyle.runPrepare(self)
+
+        self.buildWithContrib = self.buildWithContrib and not isBranch24(self)  # precommit with 2.4 target
 
         if self.dockerImage is None:
             if self.osType == OSType.LINUX:

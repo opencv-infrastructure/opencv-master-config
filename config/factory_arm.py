@@ -156,7 +156,6 @@ class ARMFactory(BaseFactory):
 
     @defer.inlineCallbacks
     def run(self):
-        self.buildWithContrib = self.buildWithContrib and not isBranch24(self)
         yield self.initialize()
         yield self.cleanup_builddir()
         yield self.checkout_sources()
