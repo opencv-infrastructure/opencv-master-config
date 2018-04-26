@@ -190,7 +190,7 @@ class CommonFactory(BuilderNewStyle):
             self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', dockerImageName))
 
         if self.osType == OSType.ANDROID and self.suppressions is None:
-            self.suppressions = [[None, re.compile('[apkbuilder]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
+            self.suppressions = [[None, re.compile(r'\[apkbuilder\]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
 
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))
