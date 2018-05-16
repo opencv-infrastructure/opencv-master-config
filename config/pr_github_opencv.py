@@ -216,6 +216,8 @@ class GitHubContext(pullrequest.context.Context):
 
         self.pushBuildProperty(properties, pr.description, 'build_parallel_tests', 'parallel_tests')
 
+        self.pushBuildProperty(properties, pr.description, 'linter_checks', 'linter_checks')
+
         sourcestamps.append(dict(
             codebase='opencv',
             #repository='https://github.com/%s/%s.git' % (self.username, self.repo),

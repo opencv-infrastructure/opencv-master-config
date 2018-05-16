@@ -88,9 +88,10 @@ class Docs_factory(BaseFactory):
         yield self.compile(target='doxygen', desc='make doxygen', suppressionFile="../%s/doc/disabled_doc_warnings.txt" % self.SRC_OPENCV)
 
         if self.isPrecommit:
-            if isNotBranch24(self):
-                yield self.compile(target='check_pylint', desc='Pylint', warningPattern=re.compile(r'^warning[: ].*', re.I | re.S))
-
+            linter_targets = str(self.getProperty('linter_checks', default='check_pylint,check_flake8')).split(',') if isNotBranch24(self) else []
+            self.env['VERBOSE'] = '1'
+            for t in linter_targets:
+                yield self.compile(target=t, desc='Run ' + t, warningPattern=re.compile(r'^warning[: ].*', re.I | re.S))
 
     @defer.inlineCallbacks
     def after_tests_steps(self):
