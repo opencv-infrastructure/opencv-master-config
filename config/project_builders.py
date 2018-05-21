@@ -308,7 +308,7 @@ for branch in ['2.4', '3.4', 'master']:
     if branch != '2.4':
         addConfiguration(
             SetOfBuildersWithSchedulers(branch=branch, nameprefix='checkcontrib-',
-                genForce=True, genNightly=True, nightlyHour=22, dayOfWeek = 6 if branch != 'master' else '*',
+                genForce=True, genNightly=True, nightlyHour=22 if branch == 'master' else 23,
                 builders=[
                     # OpenCV Contrib
                     SetOfBuilders(
