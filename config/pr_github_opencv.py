@@ -198,6 +198,10 @@ class GitHubContext(pullrequest.context.Context):
             if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA[-:]' + re_builder, 'build_cxxflags_extra') is None:
                 self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA', 'build_cxxflags_extra')
 
+        if self.isWIP(pr) or b.name in ['Custom', 'custom']:
+          if self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata') is None:
+              self.pushBuildProperty(properties, pr.description, 'test_bigdata', 'test_bigdata')
+
         self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
 
         if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'slavename') is None:

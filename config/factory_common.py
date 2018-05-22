@@ -108,6 +108,7 @@ class CommonFactory(BuilderNewStyle):
         self.isDebug = kwargs.pop('isDebug', False)
         self.runPython = kwargs.pop('runPython', self.osType != OSType.ANDROID and not (self.isDebug and self.osType == OSType.WINDOWS))
         self.runTests = kwargs.pop('runTests', True)
+        self.runTestsBigData = kwargs.pop('runTestsBigData', False)
         self.isPrecommit = kwargs.pop('isPrecommit', False)
         self.isPerf = kwargs.pop('isPerf', False)
         self.isContrib = kwargs.pop('isContrib', False)
@@ -191,6 +192,15 @@ class CommonFactory(BuilderNewStyle):
 
         if self.osType == OSType.ANDROID and self.suppressions is None:
             self.suppressions = [[None, re.compile(r'\[apkbuilder\]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
+
+        bigData = self.getProperty('test_bigdata', None)
+        if bigData is not None:
+            self.runTestsBigData = bool(bigData)
+
+        if self.runTestsBigData:
+            self.setProperty('parallel_tests', 1)  # avoid running of OOM killer
+            self.env['BUILD_BIGDATA'] = '1'  # create docker container (Linux) with relaxed memory limits
+
 
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))
@@ -645,9 +655,15 @@ class CommonFactory(BuilderNewStyle):
         common_env['OPENCV_TEST_DATA_PATH'] = Interpolate('%(prop:workdir)s/' + self.SRC_OPENCV_EXT + '/testdata')
         if isPerf and self.isPerf and (not '--check' in performance_samples):
             common_env['BUILDBOT_COMMAND_EXCLUSIVE'] = '1'
+        if self.runTestsBigData:
+            common_env['BUILDBOT_COMMAND_EXCLUSIVE'] = '1'
 
         testPrefix = 'perf' if isPerf else 'test';
         for test in listOfTests:
+            if self.runTestsBigData:
+                if test == 'java' or isPythonTest(test):
+                    continue
+
             env = common_env.copy()
             step = None
             hname = '%s_%s%s%s' % (testPrefix, test, testSuffix, buildDesc)
@@ -679,6 +695,10 @@ class CommonFactory(BuilderNewStyle):
                         moduleTestFilter = self.getModuleAccuracyTestFilter(test) if not isPerf else self.getModulePerfTestFilter(test)
                         if testFilter is not None and testFilter != '':
                             moduleTestFilter = testFilter
+                        if self.runTestsBigData:
+                            if moduleTestFilter is None or moduleTestFilter == '':
+                                moduleTestFilter = 'BigData*'
+                            cmd += ' --test_bigdata'
                         if moduleTestFilter is not None and moduleTestFilter != '':
                             cmd += ' --gtest_filter=' + moduleTestFilter
                         cmd += (' --gtest_output=xml:%s' % resultsFileOnSlave) + ' -t ' + test + \
