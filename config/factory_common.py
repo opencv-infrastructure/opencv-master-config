@@ -500,6 +500,11 @@ class CommonFactory(BuilderNewStyle):
             self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3'
             self.cmakepars['WITH_GDCM'] = 'ON'
 
+        if self.isPrecommit and isNotBranch24(self) and self.osType == OSType.WINDOWS and hasattr(self, 'buildOpenCL'):
+            if self.buildOpenCL:
+                self.cmakepars['WITH_DSHOW'] = 'ON'
+                self.cmakepars['WITH_VFW'] = 'ON'
+
         if self.getProperty('build_contrib', default=None):
             self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
 
