@@ -296,7 +296,8 @@ class GitHubContext(pullrequest.context.Context):
             pass
 
     def onUpdatePullRequest(self, prid):
-        task.deferLater(reactor, 30, self._updateGitHubStatus, prid)
-        return self._updateGitHubStatus(prid)
+        task.deferLater(reactor, 5, self._updateGitHubStatus, prid)
+        task.deferLater(reactor, 35, self._updateGitHubStatus, prid)  # merge service may cache old data, so retry again after cache expiration (~30 seconds)
+        return None  # don't wait (yield) for status update completion, to avoid processing hangs on connection issues
 
 context = GitHubContext()
