@@ -27,10 +27,15 @@ class OCL_factory(BaseFactory):
 
     @defer.inlineCallbacks
     def runPrepare(self):
-        yield BaseFactory.runPrepare(self)
-
         if isBranch24(self):
             self.testOpenCL = False
+
+        if self.testOpenCL and self.dockerImage is None:
+            if self.osType == OSType.LINUX:
+                self.dockerImage = (None, 'ubuntu:16.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+
+        yield BaseFactory.runPrepare(self)
+
 
     def _getOpenCLDeviceMap(self):
         assert not (self.platform is None or self.platform == '')
