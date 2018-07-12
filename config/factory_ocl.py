@@ -12,6 +12,7 @@ class OCL_factory(BaseFactory):
         self.testOpenCL = kwargs.pop('testOpenCL', self.useOpenCL)
         self.testOpenCLWithPlain = kwargs.pop('testOpenCLWithPlain', False)
         BaseFactory.__init__(self, *args, **kwargs)
+        self.openCLDevicePrefix = ''
         if self.testOpenCL:
             self.plainRunName = 'plain' if not self.useIPP else 'ipp' if self.useIPP == True else 'ippicv'
             self.openCLDevicePrefix = '' if not self.useIPP else 'ipp-' if self.useIPP == True else 'ippicv-'
@@ -20,13 +21,13 @@ class OCL_factory(BaseFactory):
         if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-3' in self.useSlave:
             self.useSlave.remove('linux-3')
 
-    def initConstants(self):
-        BaseFactory.initConstants(self)
-        self.cmakepars['WITH_OPENCL'] = 'ON' if self.buildOpenCL else 'OFF'
-        self.cmakepars['WITH_CUDA'] = 'OFF'
-
     @defer.inlineCallbacks
     def runPrepare(self):
+        if self.getProperty('test_opencl', default=None):
+            test_opencl = True if self.getProperty('test_opencl', default=None) in ['ON', '1', 'TRUE', 'True'] else False
+            self.buildOpenCL = test_opencl
+            self.testOpenCL = test_opencl
+
         if isBranch24(self):
             self.testOpenCL = False
 
@@ -35,6 +36,12 @@ class OCL_factory(BaseFactory):
                 self.dockerImage = (None, 'ubuntu:16.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
 
         yield BaseFactory.runPrepare(self)
+
+
+    def set_cmake_parameters(self):
+        BaseFactory.set_cmake_parameters(self)
+        self.cmakepars['WITH_OPENCL'] = 'ON' if self.buildOpenCL else 'OFF'
+        self.cmakepars['WITH_CUDA'] = 'OFF'
 
 
     def _getOpenCLDeviceMap(self):

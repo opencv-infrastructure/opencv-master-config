@@ -222,6 +222,9 @@ class GitHubContext(pullrequest.context.Context):
 
         self.pushBuildProperty(properties, pr.description, 'linter_checks', 'linter_checks')
 
+        if self.pushBuildProperty(properties, pr.description, 'test_opencl[-:]' + re_builder, 'test_opencl') is None:
+            self.pushBuildProperty(properties, pr.description, 'test_opencl', 'test_opencl')
+
         sourcestamps.append(dict(
             codebase='opencv',
             #repository='https://github.com/%s/%s.git' % (self.username, self.repo),
