@@ -5,7 +5,7 @@ from build_utils import WinCompiler
 print "Configure builds..."
 
 import constants
-from constants import trace, PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE_X
+from constants import trace, PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, PLATFORM_SKYLAKE_X
 
 import buildbot_passwords
 from buildbot.buildslave import BuildSlave
@@ -260,6 +260,25 @@ for branch in ['2.4', '3.4', 'master']:
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl'], platform=PLATFORM_SKYLAKE,
+                        useName='openvino', dockerImage='ubuntu-openvino:16.04')),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl', 'opencl'], platform=PLATFORM_SKYLAKE,
+                        useName='openvino-opencl', dockerImage='ubuntu-openvino:16.04',
+                        useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx'], platform=PLATFORM_SKYLAKE_X,
+                        useName='openvino', dockerImage='ubuntu-openvino:16.04',
+                        useSlave=['linux-3'])),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx', 'opencl'], platform=PLATFORM_SKYLAKE_X,
+                        useName='openvino-opencl', dockerImage='ubuntu-openvino:16.04',
+                        useSlave=['linux-3'], useOpenCL=True, testOpenCL=True)),
             ] if branch != '2.4' else [])
 
         )

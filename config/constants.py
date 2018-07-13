@@ -12,6 +12,7 @@ worker = {  # worker passwords are stored in the other place
 
 PLATFORM_ANY = 'any'
 PLATFORM_DEFAULT = 'default'
+PLATFORM_SKYLAKE = 'skl'
 PLATFORM_SKYLAKE_X = 'skx'  # with AVX512
 
 # Git mirror repository

@@ -25,7 +25,7 @@ from command_test_py import CommandTestPy
 from builder_newstyle import BuilderNewStyle
 
 from build_utils import *
-from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE_X
+from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, PLATFORM_SKYLAKE_X
 
 from buildprops_observer import BuildPropertiesObserver
 
@@ -129,7 +129,7 @@ class CommonFactory(BuilderNewStyle):
 
         if self.useSlave is None:
             self.useSlave = []
-            if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY]:
+            if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY, PLATFORM_SKYLAKE]:
                 if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
                     if self.is64 is None or self.is64:
                         self.useSlave += ['linux-1', 'linux-2']
