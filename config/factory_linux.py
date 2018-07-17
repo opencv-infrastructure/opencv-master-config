@@ -103,6 +103,7 @@ class AbiCompareCommand(ShellCommand):
 class LinuxPrecommitFactory(BaseFactory):
 
     def __init__(self, *args, **kwargs):
+        self.run_abi_check = kwargs.pop('run_abi_check', False)
         myargs = dict(
             branch='branch', isPrecommit=True, platform='default',
             osType=OSType.LINUX, is64=True, useIPP='ICV')
@@ -129,7 +130,7 @@ class LinuxPrecommitFactory(BaseFactory):
         if isNotBranch24(self):
             yield self.check_build()
             if isBranch34(self) and not self.isContrib:
-                if bool(self.getProperty('ci-run_abi_check', default=True)):
+                if bool(self.getProperty('ci-run_abi_check', default=self.run_abi_check)):
                     yield self.check_abi()
 
 

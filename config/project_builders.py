@@ -484,7 +484,7 @@ addConfiguration(
     SetOfBuildersWithSchedulers(branch='branch', nameprefix='precommit-',
         genForce=True, genNightly=False,
         builders=[
-            LinuxPrecommit(builderName='precommit_linux64'),
+            LinuxPrecommit(builderName='precommit_linux64', run_abi_check=True),
             linux32(LinuxPrecommit)(builderName='precommit_linux32', buildWithContrib=False),
             #LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
             OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_HALIDE':'ON', 'WITH_TBB':'ON'}),
