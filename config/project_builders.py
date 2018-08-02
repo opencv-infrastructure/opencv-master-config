@@ -166,6 +166,11 @@ def useShared(branch, platform, osType, useIPP, **params):
         enableStatic = False
     return [True, False] if enableStatic else [True]
 
+def buildExamplesParameter(buildShared, **params):
+    if buildShared is False:
+        return [False]
+    return [True]
+
 def availableDockerImage(platform, osType, testOpenCL, **params):
     if osType == OSType.LINUX:
         if platform == PLATFORM_SKYLAKE_X and testOpenCL:
@@ -221,6 +226,7 @@ for branch in ['2.4', '3.4', 'master']:
                         dict(testOpenCL=testOpenCLParameter),
                         dict(isDebug=useDebugParameter),
                         dict(buildShared=useShared),
+                        dict(buildExamples=buildExamplesParameter),
                         dict(dockerImage=availableDockerImage),
                     ]
                 ),
