@@ -201,6 +201,10 @@ class CommonFactory(BuilderNewStyle):
             self.setProperty('parallel_tests', 1)  # avoid running of OOM killer
             self.env['BUILD_BIGDATA'] = '1'  # create docker container (Linux) with relaxed memory limits
 
+        disable_ipp_prop = self.getProperty('disable_ipp', default=None)
+        if disable_ipp_prop in ['ON', '1', 'TRUE', 'True']:
+            self.env['OPENCV_IPP'] = 'disabled'
+
 
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))

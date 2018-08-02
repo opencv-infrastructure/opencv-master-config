@@ -210,6 +210,8 @@ class GitHubContext(pullrequest.context.Context):
         self.pushBuildProperty(properties, pr.description, 'build_tbb', 'build_tbb')
         self.pushBuildProperty(properties, pr.description, 'with_tbb', 'with_tbb')
 
+        self.pushBuildProperty(properties, pr.description, 'disable_ipp', 'disable_ipp')
+
         if self.pushBuildProperty(properties, pr.description, 'build_world[-:]' + re_builder, 'build_world') is None:
             self.pushBuildProperty(properties, pr.description, 'build_world', 'build_world')
 
