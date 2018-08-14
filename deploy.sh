@@ -3,8 +3,13 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 DOCKER=${DOCKER:-docker} # DOCKER="sudo docker" ./deploy.sh
 
+APP_ENV=${APP_ENV:-production}
 IMAGE=${IMAGE:-buildbot_image}
 CONTAINER=${CONTAINER:-buildbot}
+
+if [ ! -f ./deploy_env.sh ]; then
+  . ./deploy_env.sh
+fi
 
 # Settings
 if [ ! -f deploy/env.sh ]; then
@@ -89,16 +94,16 @@ else
 fi
 
 # Docker image
-#if [ -n "$HTTP_PROXY" ]; then
-#  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTP_PROXY=$HTTP_PROXY"
-#  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg http_proxy=$HTTP_PROXY"
-#fi
+if [ -n "$HTTP_PROXY" ]; then
+  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTP_PROXY=$HTTP_PROXY"
+  DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg http_proxy=$HTTP_PROXY"
+fi
 if [ -n "$HTTPS_PROXY" ]; then
   DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTPS_PROXY=$HTTPS_PROXY"
   DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg https_proxy=$HTTPS_PROXY"
 fi
-$DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/production
-#$DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/development
+printf "%q " $DOCKER_BUILD_ARGS > .docker_build_options
+$DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/${APP_ENV}
 
 
 cat <<EOF
