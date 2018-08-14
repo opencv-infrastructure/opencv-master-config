@@ -285,6 +285,11 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx', 'opencl'], platform=PLATFORM_SKYLAKE_X,
                         useName='openvino-opencl', dockerImage='ubuntu-openvino:16.04',
                         useSlave=['linux-3'], useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'halide', 'skl', 'opencl'],
+                        useName='halide', dockerImage='halide:16.04',
+                        useOpenCL=True, testOpenCL=True)),
             ] if branch != '2.4' else [])
 
         )
@@ -493,7 +498,7 @@ addConfiguration(
             LinuxPrecommit(builderName='precommit_linux64', run_abi_check=True),
             linux32(LinuxPrecommit)(builderName='precommit_linux32', buildWithContrib=False),
             #LinuxPrecommit(builderName='precommit_linux64-icc', dockerImage='ubuntu-icc:16.04'),
-            OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_HALIDE':'ON', 'WITH_TBB':'ON'}),
+            OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_TBB':'ON'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False),
             WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15, cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'}),
             WindowsPrecommit64(builderName='precommit_windows64'),
