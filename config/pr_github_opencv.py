@@ -197,6 +197,10 @@ class GitHubContext(pullrequest.context.Context):
                 self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
             if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA[-:]' + re_builder, 'build_cxxflags_extra') is None:
                 self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA', 'build_cxxflags_extra')
+            if self.pushBuildProperty(properties, pr.description, 'CPU_BASELINE[-:]' + re_builder, 'build_cpu_baseline') is None:
+                self.pushBuildProperty(properties, pr.description, 'CPU_BASELINE', 'build_cpu_baseline')
+            if self.pushBuildProperty(properties, pr.description, 'CPU_DISPATCH[-:]' + re_builder, 'build_cpu_dispatch') is None:
+                self.pushBuildProperty(properties, pr.description, 'CPU_DISPATCH', 'build_cpu_dispatch')
 
         if self.isWIP(pr) or b.name in ['Custom', 'custom']:
           if self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata') is None:

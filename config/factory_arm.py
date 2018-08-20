@@ -255,7 +255,8 @@ class ARMv7Factory(ARMFactory):
         #self.cmakepars['GCC_COMPILER_VERSION'] = '5'
         self.cmakepars['ENABLE_NEON'] = 'YES'
         self.cmakepars['ENABLE_VFPV3'] = 'YES'
-        self.cmakepars['CPU_BASELINE'] = 'FP16'
+        if not 'CPU_BASELINE' in self.cmakepars:
+            self.cmakepars['CPU_BASELINE'] = 'FP16'
         self.cmakepars.pop('WITH_GDCM', None)
         self.cmakepars.pop('WITH_OPENCL', None)
         is24 = isBranch24(self)

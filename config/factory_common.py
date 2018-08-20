@@ -524,6 +524,11 @@ class CommonFactory(BuilderNewStyle):
         if self.getProperty('build_cxxflags', default=None):
             self.cmakepars['CMAKE_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags', default='')
 
+        if self.getProperty('build_cpu_baseline', default=None) is not None:
+            self.cmakepars['CPU_BASELINE'] = '"%s"' % self.getProperty('build_cpu_baseline', default='')
+        if self.getProperty('build_cpu_dispatch', default=None) is not None:
+            self.cmakepars['CPU_DISPATCH'] = '"%s"' % self.getProperty('build_cpu_dispatch', default='')
+
         if self.getProperty('build_cxxflags_extra', default=None):
             self.cmakepars['OPENCV_EXTRA_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags_extra', default='')
 
