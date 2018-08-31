@@ -271,6 +271,10 @@ class CommonFactory(BuilderNewStyle):
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''
+        maxtime_prop = self.getProperty('test_maxtime', default=None)
+        if maxtime_prop:
+            return int(maxtime_prop)
+
         if self.isPrecommit:
             return 40 * 60
         elif isPerf:
@@ -280,6 +284,10 @@ class CommonFactory(BuilderNewStyle):
 
     def getTestTimeout(self):
         ''' timeout for test execution without output, seconds '''
+        timeout_prop = self.getProperty('test_timeout', default=None)
+        if timeout_prop:
+            return int(timeout_prop)
+
         if self.isPrecommit and self.isDebug != True:
             return 3 * 60
         else:

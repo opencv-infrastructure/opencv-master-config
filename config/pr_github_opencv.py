@@ -226,6 +226,11 @@ class GitHubContext(pullrequest.context.Context):
 
         self.pushBuildProperty(properties, pr.description, 'build_parallel_tests', 'parallel_tests')
 
+        if self.pushBuildProperty(properties, pr.description, 'test_timeout[-:]' + re_builder, 'test_timeout') is None:
+            self.pushBuildProperty(properties, pr.description, 'test_timeout', 'test_timeout')
+        if self.pushBuildProperty(properties, pr.description, 'test_maxtime[-:]' + re_builder, 'test_maxtime') is None:
+            self.pushBuildProperty(properties, pr.description, 'test_maxtime', 'test_maxtime')
+
         self.pushBuildProperty(properties, pr.description, 'linter_checks', 'linter_checks')
 
         if self.pushBuildProperty(properties, pr.description, 'test_opencl[-:]' + re_builder, 'test_opencl') is None:
