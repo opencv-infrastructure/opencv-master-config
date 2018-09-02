@@ -96,16 +96,38 @@ class GitHubContext(pullrequest.context.Context):
             defer.returnValue(prs)
         raise Exception('invalid status', self.client.status)
 
+    def getBuilderIDs(self, names):
+        blist = []
+        names_to_ids = dict([(str(v['name']).lower(), n) for (n, v) in self.builders.items()])
+        for n in names:
+            if n in self.builders:
+                blist.append(n)
+                continue
+            k = str(n).lower()
+            if k in names_to_ids:
+                blist.append(names_to_ids[k])
+                continue
+            print("Can't find builder with name: {}".format(n))
+        return blist
+
+    def validateBuildersParameter(self, name, value):
+        if re.search(r'\\[^a-zA-Z0-9_]', value):
+            raise ValueError('Parameter {} check failed (escape rule): "{}"'.format(name, value))
+        for s in value:
+            if not s.isdigit() and not s.isalpha() and s not in [',', ' ', '-', '_']:
+                raise ValueError('Parameter {} check failed: "{}"'.format(name, value))
+        return value
+
     def getListOfAutomaticBuilders(self, pr):
         if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
-        force_builders_only_parameter = self.extractParameterEx(pr.description, 'force_builders_only')
+        force_builders_only_parameter = self.extractParameterEx(pr.description, 'force_builders_only', validationFn=self.validateBuildersParameter, allowSpaces=True)
         if force_builders_only_parameter:
-            return str(force_builders_only_parameter[1]).split(',')
+            return self.getBuilderIDs(str(force_builders_only_parameter[1]).split(','))
         force_builders = []
-        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
+        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders', validationFn=self.validateBuildersParameter, allowSpaces=True)
         if force_builders_parameter:
-            force_builders = str(force_builders_parameter[1]).split(',')
+            force_builders = self.getBuilderIDs(str(force_builders_parameter[1]).split(','))
         if self.isBadBranch(pr):
             return force_builders
         if self.isWIP(pr):

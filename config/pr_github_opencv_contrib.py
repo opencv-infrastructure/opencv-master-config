@@ -58,13 +58,13 @@ class GitHubContext(pr_github_opencv.GitHubContext):
     def getListOfAutomaticBuilders(self, pr):
         if os.environ.get('DEBUG', False) or os.environ.get('BUILDBOT_MANUAL', False):
             return []
-        force_builders_only_parameter = self.extractParameterEx(pr.description, 'force_builders_only')
+        force_builders_only_parameter = self.extractParameterEx(pr.description, 'force_builders_only', validationFn=self.validateBuildersParameter, allowSpaces=True)
         if force_builders_only_parameter:
-            return str(force_builders_only_parameter[1]).split(',')
+            return self.getBuilderIDs(str(force_builders_only_parameter[1]).split(','))
         force_builders = []
-        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders')
+        force_builders_parameter = self.extractParameterEx(pr.description, 'force_builders', validationFn=self.validateBuildersParameter, allowSpaces=True)
         if force_builders_parameter:
-            force_builders = str(force_builders_parameter[1]).split(',')
+            force_builders = self.getBuilderIDs(str(force_builders_parameter[1]).split(','))
         if self.isBadBranch(pr):
             return force_builders
         if self.isWIP(pr):
