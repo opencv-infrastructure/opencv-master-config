@@ -18,6 +18,8 @@ class iOSFactory(BaseFactory):
         )
         myargs.update(kwargs)
         BaseFactory.__init__(self, *args, **myargs)
+        if not self.isContrib and self.isPrecommit:
+            self.buildWithContrib = False
 
 
     @defer.inlineCallbacks

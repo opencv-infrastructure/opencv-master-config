@@ -167,6 +167,9 @@ class CommonFactory(BuilderNewStyle):
 
         self.buildWithContrib = self.buildWithContrib and not isBranch24(self)  # precommit with 2.4 target
 
+        if self.getProperty('build_contrib', default=None):
+            self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
+
         if self.dockerImage is None:
             if self.osType == OSType.LINUX:
                 default_docker = (None, 'ubuntu:14.04') if not isBranchMaster(self) else (None, 'ubuntu:16.04')
@@ -295,7 +298,6 @@ class CommonFactory(BuilderNewStyle):
 
     @defer.inlineCallbacks
     def run(self):
-        self.buildWithContrib = self.buildWithContrib and isNotBranch24(self)
         yield self.initialize()
         yield self.cleanup_builddir()
         yield self.checkout_sources()
@@ -516,9 +518,6 @@ class CommonFactory(BuilderNewStyle):
             if self.buildOpenCL:
                 self.cmakepars['WITH_DSHOW'] = 'ON'
                 self.cmakepars['WITH_VFW'] = 'ON'
-
-        if self.getProperty('build_contrib', default=None):
-            self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
 
         if self.buildWithContrib:
             self.cmakepars['OPENCV_EXTRA_MODULES_PATH'] = self.getProperty('workdir') + '/' + self.SRC_OPENCV_CONTRIB + '/modules'

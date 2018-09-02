@@ -222,7 +222,8 @@ class GitHubContext(pullrequest.context.Context):
         if self.pushBuildProperty(properties, pr.description, 'build_shared[-:]' + re_builder, 'build_shared') is None:
             self.pushBuildProperty(properties, pr.description, 'build_shared', 'build_shared')
 
-        self.pushBuildProperty(properties, pr.description, 'build_contrib', 'build_contrib')
+        if self.pushBuildProperty(properties, pr.description, 'build_contrib[-:]' + re_builder, 'build_contrib') is None:
+            self.pushBuildProperty(properties, pr.description, 'build_contrib', 'build_contrib')
 
         self.pushBuildProperty(properties, pr.description, 'build_parallel_tests', 'parallel_tests')
 
