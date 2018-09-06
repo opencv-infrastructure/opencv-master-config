@@ -71,7 +71,8 @@ class AbiCompareCommand(ShellCommand):
             "-report-path", reportFile,
             "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
                 "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
-                ".*experimental_.*",
+                ".*experimental_.*" + \
+                "|_ZN9_IplImageC.*|_ZN7CvMatNDC.*"
         ]
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
