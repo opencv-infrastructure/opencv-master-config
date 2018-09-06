@@ -100,14 +100,12 @@ class GitHubContext(pr_github_opencv.GitHubContext):
         properties.setProperty('branch', pr.branch, 'Pull request')
         properties.setProperty('head_sha', pr.head_sha, 'Pull request')
         properties.setProperty('pullrequest', pr.prid, 'Pull request')
-        # regressionTestFilter = self.extractRegressionTestFilter(pr.description)
 
-        re_builder = re.escape(b.name)
-
-        self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
-
-        if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'slavename') is None:
-            self.pushBuildProperty(properties, pr.description, 'buildworker', 'slavename')
+        try:
+            self.applyBuildCommonOptions(pr, b, properties, sourcestamps)
+        except:
+            log.err()
+            raise
 
         sourcestamps.append(dict(
             codebase='opencv',

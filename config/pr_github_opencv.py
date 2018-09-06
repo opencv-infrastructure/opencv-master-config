@@ -181,23 +181,7 @@ class GitHubContext(pullrequest.context.Context):
                 return True
         return False
 
-    @defer.inlineCallbacks
-    def getBuildProperties(self, pr, b, properties, sourcestamps):
-        extra_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_extra')
-        extra_branch_name = pr.head_branch
-        if extra_branch_name_parameter:
-            extra_branch_name = extra_branch_name_parameter[1]
-
-        contrib_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_contrib')
-        contrib_branch_name = pr.head_branch
-        if contrib_branch_name_parameter:
-            contrib_branch_name = contrib_branch_name_parameter[1]
-
-        if not self.isBadBranch(pr):
-            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
-                    (yield self.readOtherPR(pr, 'opencv_contrib', contrib_branch_name, 'contrib'))):
-                defer.returnValue(False)
-
+    def applyBuildCommonOptions(self, pr, b, properties, sourcestamps):
         properties.setProperty('branch', pr.branch, 'Pull request')
         properties.setProperty('head_sha', pr.head_sha, 'Pull request')
         properties.setProperty('pullrequest', pr.prid, 'Pull request')
@@ -258,6 +242,31 @@ class GitHubContext(pullrequest.context.Context):
 
         if self.pushBuildProperty(properties, pr.description, 'test_opencl[-:]' + re_builder, 'test_opencl') is None:
             self.pushBuildProperty(properties, pr.description, 'test_opencl', 'test_opencl')
+
+
+
+    @defer.inlineCallbacks
+    def getBuildProperties(self, pr, b, properties, sourcestamps):
+        extra_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_extra')
+        extra_branch_name = pr.head_branch
+        if extra_branch_name_parameter:
+            extra_branch_name = extra_branch_name_parameter[1]
+
+        contrib_branch_name_parameter = self.extractParameterEx(pr.description, 'opencv_contrib')
+        contrib_branch_name = pr.head_branch
+        if contrib_branch_name_parameter:
+            contrib_branch_name = contrib_branch_name_parameter[1]
+
+        if not self.isBadBranch(pr):
+            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
+                    (yield self.readOtherPR(pr, 'opencv_contrib', contrib_branch_name, 'contrib'))):
+                defer.returnValue(False)
+
+        try:
+            self.applyBuildCommonOptions(pr, b, properties, sourcestamps)
+        except:
+            log.err()
+            raise
 
         sourcestamps.append(dict(
             codebase='opencv',
