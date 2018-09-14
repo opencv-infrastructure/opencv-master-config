@@ -79,6 +79,7 @@ class ARMTest(CommandTest):
                        "export GTEST_TOTAL_SHARDS=%d" % self.shardCount,
                        "export LD_LIBRARY_PATH=`pwd`/lib",
                        "export OPENCV_TEST_DATA_PATH=`pwd`/../opencv_extra/testdata",
+                       "export OPENCV_SAMPLES_DATA_PATH=`pwd`/../opencv",
                        "./bin/opencv_test_core",
                        "./bin/opencv_test_imgproc",
                        "./bin/opencv_test_calib3d --gtest_filter=-*fisheyeTest.rectify*",
@@ -225,6 +226,7 @@ class ARMFactory(BaseFactory):
                                  'export OPENCV_TEST_DATA_PATH=`pwd`/../opencv_extra/testdata ; '\
                                  'export LD_LIBRARY_PATH=`pwd`/lib ; '\
                                  'export PYTHONPATH=`pwd`/lib ; '\
+                                 'export OPENCV_SAMPLES_DATA_PATH=`pwd`/../opencv ; '\
                                  'python ../opencv/modules/python/test/test.py --repo `pwd`/../opencv -v 2>&1'\
                                  '\''.format(workdir=workdir, **devices[0])))
 
