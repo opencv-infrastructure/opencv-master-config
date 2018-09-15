@@ -400,7 +400,7 @@ class CommonFactory(BuilderNewStyle):
             if (not 'BUILD_COMPILER' in self.env) and (self.compiler is not None):
                 self.env['BUILD_COMPILER'] = self.compiler
 
-            if self.cmake_generator is None:
+            if self.osType == OSType.WINDOWS and self.cmake_generator is None:
                 self.cmake_generator = WinCompiler.getCMakeGenerator(self.compiler, self.is64)
 
     @defer.inlineCallbacks

@@ -290,6 +290,59 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'halide', 'skl', 'opencl'],
                         useName='halide', dockerImage='halide:16.04',
                         useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skl', 'ubuntu18', 'avx2', 'ninja'],
+                        useName='opt-avx2', dockerImage='ubuntu:18.04', cmake_generator='Ninja',
+                        cmake_parameters={'CPU_BASELINE': 'AVX2', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skl', 'ubuntu18', 'avx', 'ninja'],
+                        useName='opt-avx', dockerImage='ubuntu:18.04', cmake_generator='Ninja',
+                        cmake_parameters={'CPU_BASELINE': 'AVX', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skl', 'ubuntu18', 'sse42', 'ninja'],
+                        useName='opt-sse42', dockerImage='ubuntu:18.04', cmake_generator='Ninja',
+                        cmake_parameters={'CPU_BASELINE': 'SSE4_2', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE_X)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skx', 'ubuntu18', 'avx512', 'ninja'],
+                        useName='opt-avx512', dockerImage='ubuntu:18.04', cmake_generator='Ninja',
+                        cmake_parameters={'CPU_BASELINE': 'AVX512_SKX', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skl', 'ubuntu18', 'avx2', 'clang', 'ninja'],
+                        useName='opt-avx2', compiler='clang', dockerImage='ubuntu-clang:18.04', cmake_generator='Ninja',
+                        cmake_parameters={'CPU_BASELINE': 'AVX2', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'ubuntu18', 'clang', 'ninja'],
+                        compiler='clang', dockerImage='ubuntu-clang:18.04', cmake_generator='Ninja',
+                        useIPP=False, useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'qt', 'openmp', 'ninja'],
+                        useName='etc-qt-openmp', dockerImage='qt:16.04', cmake_generator='Ninja',
+                        cmake_parameters={'WITH_OPENMP': 'ON'},
+                        useOpenCL=True, testOpenCL=False)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'fedora', 'tbb', 'ninja'],
+                        useName='etc-fedora-tbb', dockerImage='fedora:28', cmake_generator='Ninja',
+                        cmake_parameters={'WITH_TBB': 'ON'},
+                        useOpenCL=True, testOpenCL=False)),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'ffmpeg', 'ninja'],
+                        useName='etc-ffmpeg-master', dockerImage='ffmpeg-master', cmake_generator='Ninja',
+                        builder_properties={'modules_filter':'videoio,video,tracking'},
+                        useOpenCL=False, testOpenCL=False)),
             ] if branch != '2.4' else [])
 
         )
