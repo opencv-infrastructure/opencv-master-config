@@ -214,8 +214,8 @@ class GitHubContext(pullrequest.context.Context):
 
         self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
 
-        if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'slavename') is None:
-            self.pushBuildProperty(properties, pr.description, 'buildworker', 'slavename')
+        if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'buildworker') is None:
+            self.pushBuildProperty(properties, pr.description, 'buildworker', 'buildworker')
 
         self.pushBuildProperty(properties, pr.description, 'build_tbb', 'build_tbb')
         self.pushBuildProperty(properties, pr.description, 'with_tbb', 'with_tbb')

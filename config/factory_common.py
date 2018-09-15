@@ -880,8 +880,7 @@ class CommonFactory(BuilderNewStyle):
         yield self.processStep(step)
 
 
-    def getFactoryProperties(self):
-        props = {}
+    def getFactoryProperties(self, props):
         if self.platform:
             props['platform'] = self.platform
         if not self.isPrecommit and self.branch:

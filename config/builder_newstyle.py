@@ -87,6 +87,8 @@ class BuilderNewStyle(object, PropertiesMixin):
             self.useSlave = kwargs.pop('useSlave', None)
         if not hasattr(self, 'tags'):
             self.tags = list(kwargs.pop('tags', []))
+        if not hasattr(self, 'builder_properties'):
+            self.builder_properties = kwargs.pop('builder_properties', {})
         self.locks = kwargs.pop('locks', [])
         assert len(kwargs.keys()) == 0, 'Unknown parameters: ' + ' '.join(kwargs.keys())
 
@@ -152,12 +154,19 @@ class BuilderNewStyle(object, PropertiesMixin):
         return BuildFactoryWrapper(self)
 
 
-    def getFactoryProperties(self):
-        props = {}
+    def getFactoryProperties(self, props):
         return props
 
     def getTags(self):
         return self.tags
+
+    def canStartBuild(self, bldr, builder, breq):
+        if 'buildworker' in breq.properties:
+            buildworker = breq.properties['buildworker']
+            if isinstance(buildworker, basestring):
+                buildworker = buildworker.split(',')
+            return builder.slave.slavename in buildworker
+        return True
 
     def register(self):
         self.initConstants()
@@ -167,8 +176,8 @@ class BuilderNewStyle(object, PropertiesMixin):
             factory=self.getFactory(),
             mergeRequests=False,
             tags=list(set(self.getTags())),
-            properties=self.getFactoryProperties(),
-            canStartBuild = builder.enforceChosenSlave,
+            properties=self.getFactoryProperties(props=self.builder_properties),
+            canStartBuild = self.canStartBuild,
             locks=self.locks)
 
     #
