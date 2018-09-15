@@ -33,6 +33,7 @@ class GitHubContext(pullrequest.context.Context):
     builders = dict(
         linux=dict(name='Linux x64', builders=['precommit_linux64'], order=10),
         ocllinux=dict(name='Linux OpenCL', builders=['precommit_opencl_linux'], order=11),
+        l_native=dict(name='Linux AVX2', builders=['precommit_linux64-avx2'], order=12),
         windows=dict(name='Win64', builders=['precommit_windows64'], order=20),
         ocl=dict(name='Win64 OpenCL', builders=['precommit_opencl'], order=21),
         macosx=dict(name='Mac', builders=['precommit_macosx'], order=30),
