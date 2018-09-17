@@ -72,7 +72,10 @@ class AbiCompareCommand(ShellCommand):
             "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
                 "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
                 ".*experimental_.*" + \
-                "|_ZN9_IplImageC.*|_ZN7CvMatNDC.*"
+                "|_ZN9_IplImageC.*|_ZN7CvMatNDC.*" + \
+                "|.*2cv10AutoBuffer.*" + \
+                "|_ZN2cv7MomentsC.*" + \
+                "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*"
         ]
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
