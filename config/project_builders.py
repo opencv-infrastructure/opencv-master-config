@@ -341,6 +341,7 @@ for branch in ['2.4', '3.4', 'master']:
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'ffmpeg', 'ninja'],
                         useName='etc-ffmpeg-master', dockerImage='ffmpeg-master', cmake_generator='Ninja',
+                        cmake_parameters={'WITH_GSTREAMER': 'OFF'},  # avoid loading of system FFmpeg libraries via GStreamer libav plugin
                         builder_properties={'modules_filter':'videoio,video,tracking'},
                         useOpenCL=False, testOpenCL=False)),
             ] if branch != '2.4' else [])
