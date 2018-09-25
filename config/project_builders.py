@@ -265,9 +265,6 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript')),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
-                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
-                SetOfBuilders(
-                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl'], platform=PLATFORM_SKYLAKE,
                         useName='openvino', dockerImage='ubuntu-openvino:16.04')),
                 SetOfBuilders(
@@ -344,8 +341,11 @@ for branch in ['2.4', '3.4', 'master']:
                         cmake_parameters={'WITH_GSTREAMER': 'OFF'},  # avoid loading of system FFmpeg libraries via GStreamer libav plugin
                         builder_properties={'modules_filter':'videoio,video,tracking'},
                         useOpenCL=False, testOpenCL=False)),
-            ] if branch != '2.4' else [])
-
+            ] if branch != '2.4' else []) + ([
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
+            ] if branch == '3.4' else [])
         )
     )
     addConfiguration(
@@ -430,7 +430,11 @@ for branch in ['2.4', '3.4', 'master']:
                         factory_class=ARMv8Factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT)
                     ),
-                ]
+                ] + ([
+                    SetOfBuilders(
+                        factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                        init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:16.04')),
+                ] if branch == 'master' else [])
             )
         )
 
