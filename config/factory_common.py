@@ -132,11 +132,11 @@ class CommonFactory(BuilderNewStyle):
             if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY, PLATFORM_SKYLAKE]:
                 if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
                     if self.is64 is None or self.is64:
-                        self.useSlave += ['linux-1', 'linux-2']
+                        self.useSlave += ['linux-1', 'linux-2', 'linux-4']
                         #if not self.isPrecommit:
                         #    self.useSlave = ['linux-1']
                     else:
-                        self.useSlave += ['linux-1']
+                        self.useSlave += ['linux-1', 'linux-4']
                 elif self.osType == OSType.WINDOWS:
                     self.useSlave += ['windows-1', 'windows-2'] if self.compiler != 'vc15' else ['windows-1']
                 elif self.osType == OSType.MACOSX:

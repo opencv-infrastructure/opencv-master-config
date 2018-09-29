@@ -154,6 +154,8 @@ class ARMFactory(BaseFactory):
         )
         myargs.update(kwargs)
         BaseFactory.__init__(self, *args, **myargs)
+        if 'linux-2' in self.useSlave:
+            self.useSlave.remove('linux-2')
 
     @defer.inlineCallbacks
     def run(self):
