@@ -161,10 +161,15 @@ class BuilderNewStyle(object, PropertiesMixin):
         return self.tags
 
     def canStartBuild(self, bldr, builder, breq):
+        print('canStartBuild: {} on {}'.format(self.getName(), builder.slave.slavename))
+        buildworker = None
         if 'buildworker' in breq.properties:
             buildworker = breq.properties['buildworker']
-            if isinstance(buildworker, basestring):
-                buildworker = buildworker.split(',')
+        elif 'buildworker' in bldr.config.properties:
+            buildworker = bldr.config.properties['buildworker']
+        if buildworker:
+            if not isinstance(buildworker, (list, tuple)):
+                buildworker = str(buildworker).split(',')
             return builder.slave.slavename in buildworker
         return True
 
