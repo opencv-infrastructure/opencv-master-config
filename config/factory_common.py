@@ -736,28 +736,10 @@ class CommonFactory(BuilderNewStyle):
                     defer.returnValue(cmd)
                 return command
 
-            def getDoStepIf(test, doStepIf=doStepIf):
-                doStepIf= doStepIf
-                if isinstance(doStepIf, bool):
-                    doStepIf = lambda _: doStepIf
-                def fn(step):
-                    if not doStepIf(step):
-                        return False
-                    modulesFilter = step.getProperty('modules_filter')
-                    if modulesFilter:
-                        modulesList = modulesFilter.split(',')
-                        if test in modulesList:
-                            return True
-                        else:
-                            return False
-                    return True
-                return fn
-            doStepIfModule = getDoStepIf(test)
-
             args = dict(name=hname, workdir=builddir,
                     command=getCommand(test, testFilter, resultsFileOnSlave), env=env, descriptionDone=hname, description=hname,
                     warnOnWarnings=True, maxTime=self.getTestMaxTime(isPerf), timeout=self.getTestTimeout(),
-                    doStepIf=doStepIfModule, hideStepIf=hideStepIfDefault, logfiles={})
+                    doStepIf=doStepIf, hideStepIf=hideStepIfDefault, logfiles={})
             if not self.isPrecommit or self.isPerf:
                 args['logfiles'] = { getResultFileNameRenderer(testPrefix, test, testSuffix) : resultsFileOnSlave }
             if isPythonTest(test):
@@ -836,7 +818,12 @@ class CommonFactory(BuilderNewStyle):
             res = [i for i in all if i not in main]
         if not self.runPython or self.isContrib:
             res = [i for i in res if not isPythonTest(i)]
-        return [i for i in res if i not in self.getTestBlacklist(isPerf)]
+        modulesFilter = self.getProperty('modules_filter')
+        if modulesFilter:
+            modulesList = modulesFilter.split(',')
+            return [i for i in res if i in modulesList]
+        modules_force_list = str(self.getProperty('modules_force', '')).split(',')
+        return [i for i in res if (i not in self.getTestBlacklist(isPerf)) or (i in modules_force_list)]
 
     @defer.inlineCallbacks
     def testAll(self):

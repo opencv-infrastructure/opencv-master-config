@@ -213,6 +213,9 @@ class GitHubContext(pullrequest.context.Context):
           if self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata') is None:
               self.pushBuildProperty(properties, pr.description, 'test_bigdata', 'test_bigdata')
 
+        if self.pushBuildProperty(properties, pr.description, 'test_module[s]?_force[-:]' + re_builder, 'modules_force') is None:
+            self.pushBuildProperty(properties, pr.description, 'test_module[s]?_force', 'modules_force')
+
         self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
 
         if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'buildworker') is None:
