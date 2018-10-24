@@ -134,7 +134,8 @@ class WinPackBuild(BaseFactory):
         self.cmakepars['WITH_TBB'] = 'OFF'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = Interpolate('%(prop:workdir)s/install')
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'
-
+        self.cmakepars['INSTALL_PDB'] = 'ON'
+        self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL'] = 'OFF'
 
     @defer.inlineCallbacks
     def packInstall(self):
@@ -191,7 +192,8 @@ class WinPackBindings(WinPackBuild):
         else:
             self.cmakepars['BUILD_opencv_python2'] = 'ON'
             self.cmakepars['BUILD_opencv_python3'] = 'OFF'
-
+        self.cmakepars['INSTALL_PDB'] = 'OFF'
+        del self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL']
 
 '''
 Builder for docs
