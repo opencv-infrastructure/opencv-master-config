@@ -195,6 +195,10 @@ class CommonFactory(BuilderNewStyle):
 
         if self.osType == OSType.ANDROID and self.suppressions is None:
             self.suppressions = [[None, re.compile(r'\[apkbuilder\]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
+        if self.osType == OSType.MACOSX and self.suppressions is None:
+            # ld: warning: text-based stub file /System/Library/Frameworks//OpenCL.framework/OpenCL.tbd
+            # and library file /System/Library/Frameworks//OpenCL.framework/OpenCL are out of sync. Falling back to library file for linking.
+            self.suppressions = [[None, re.compile(r'text-based stub file'), None, None]]
 
         bigData = self.getProperty('test_bigdata', None)
         if bigData is not None:
