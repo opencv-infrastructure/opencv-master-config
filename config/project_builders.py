@@ -539,7 +539,7 @@ LinuxPrecommit = precommit(platform(PLATFORM_ANY)(LinuxPrecommitFactory))
 WindowsPrecommit64 = windows(precommitFactory)
 WindowsPrecommit32 = windows32(precommitFactory)
 MacOSXPrecommit = macosx(OpenCL_noTest(precommitFactory))
-AndroidPrecommit = android(precommitFactory)
+AndroidPrecommit = android(precommit(platform(PLATFORM_DEFAULT)(OpenCVBuildFactory)))
 OCLPrecommit = windows(OpenCL(precommitFactory))
 OCLLinuxPrecommit = linux(OpenCL(platform(PLATFORM_DEFAULT)(precommitFactory)))
 OCLMacPrecommit = macosx(OpenCL(precommitFactory))
@@ -559,6 +559,7 @@ addConfiguration(
             OCLLinuxPrecommit(builderName='precommit_opencl_linux', dockerImage='ubuntu:16.04', cmake_parameters={'OPENCV_CXX11':'ON', 'WITH_TBB':'ON'}),
             OCLLinuxPrecommit(builderName='precommit_linux64-avx2', dockerImage='ubuntu:18.04', platform=PLATFORM_ANY,
                     cmake_parameters={'OPENCV_CXX11':'ON', 'CPU_BASELINE':'AVX2', 'CPU_DISPATCH':''},
+                    useIPP=False,  # check OpenCV AVX2 code instead of IPP
                     builder_properties={'buildworker':'linux-1,linux-2'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False,
                     builder_properties={'buildworker':'linux-3'}),

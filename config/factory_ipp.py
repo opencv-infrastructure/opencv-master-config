@@ -10,7 +10,9 @@ class IPP_factory(CommonFactory):
 
     def initConstants(self):
         CommonFactory.initConstants(self)
-        if self.useIPP == True:
+        if self.useIPP is None:
+            pass  # no extra options
+        elif self.useIPP == True:
             self.cmakepars['WITH_IPP'] = 'ON'
             self.env['BUILD_WITH_IPP'] = '1'
         elif self.useIPP == 'ICV':

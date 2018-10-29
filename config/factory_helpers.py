@@ -78,15 +78,27 @@ def OpenCL_noTest(cls):
         return cls(*args, **kwargs)
     return _
 
-def IPP_ICV(cls):
+def IPP_ICV_force(cls):
     def _(*args, **kwargs):
         kwargs['useIPP'] = 'ICV'
         return cls(*args, **kwargs)
     return _
 
-def IPP_None(cls):
+def IPP_None_force(cls):
     def _(*args, **kwargs):
         kwargs['useIPP'] = False
+        return cls(*args, **kwargs)
+    return _
+
+def IPP_ICV(cls):
+    def _(*args, **kwargs):
+        kwargs['useIPP'] = kwargs.pop('useIPP', 'ICV')
+        return cls(*args, **kwargs)
+    return _
+
+def IPP_None(cls):
+    def _(*args, **kwargs):
+        kwargs['useIPP'] = kwargs.pop('useIPP', 'False')
         return cls(*args, **kwargs)
     return _
 
