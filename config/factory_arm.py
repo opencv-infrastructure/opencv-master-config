@@ -58,6 +58,7 @@ class ARMTest(CommandTest):
                              description="test %d shards" % self.shardCount,
                              descriptionDone="test %d shards" % self.shardCount,
                              warnOnWarnings=True,
+                             maxTime=60*60, timeout=30*60,
                              **kwargs)
         for index in range(self.shardCount):
             self.addLogObserver(self.getLogName(index), GoogleUnitTestsObserver())
