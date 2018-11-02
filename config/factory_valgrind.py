@@ -11,9 +11,11 @@ class ValgrindFactory(ParentClass):
         cmake_parameters['CPU_DISPATCH'] = ''
         cmake_parameters['CPU_BASELINE'] = 'AVX'
         cmake_parameters['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'
+        cmake_parameters['WITH_IPP'] = 'OFF'
         kwargs['cmake_parameters'] = cmake_parameters
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
         kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'valgrind'))
+        # changes builder name: kwargs['useIPP'] = False
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks

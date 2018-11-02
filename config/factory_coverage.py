@@ -32,6 +32,10 @@ class CoverageFactory(ParentClass):
         branch = kwargs.get('branch', 'master')
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
         kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'coverage' if branch != '2.4' else 'coverage:14.04'))
+        #changes builder name: kwargs['useIPP'] = False
+        cmake_parameters = kwargs.pop('cmake_parameters', {})
+        cmake_parameters['WITH_IPP'] = 'OFF'
+        kwargs['cmake_parameters'] = cmake_parameters
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks
@@ -46,6 +50,7 @@ class CoverageFactory(ParentClass):
         self.cmakepars['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'
         self.cmakepars['CPU_BASELINE'] = 'HOST'
         self.cmakepars['CPU_DISPATCH'] = ''
+        self.cmakepars['WITH_IPP'] = 'OFF'
 
     @defer.inlineCallbacks
     def testAll(self):
