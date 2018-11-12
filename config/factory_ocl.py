@@ -18,7 +18,9 @@ class OCL_factory(BaseFactory):
             self.openCLDevicePrefix = '' if not self.useIPP else 'ipp-' if self.useIPP == True else 'ippicv-'
         if self.useName is None:
             self.useName = 'noOCL' if self.buildOpenCL == False else None
-        if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-3' in self.useSlave:
+        if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-3' in self.useSlave and \
+            (not self.builder_properties or not 'buildworker' in self.builder_properties):
+            print('OCL: Excluding linux-3 from builder: {} (props = {})'.format(self.getName(), str(self.builder_properties)))
             self.useSlave.remove('linux-3')
 
     @defer.inlineCallbacks
