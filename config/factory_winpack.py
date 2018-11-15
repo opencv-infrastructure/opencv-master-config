@@ -136,6 +136,7 @@ class WinPackBuild(BaseFactory):
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'
         self.cmakepars['INSTALL_PDB'] = 'ON'
         self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL'] = 'OFF'
+        self.cmakepars['OPENCV_GENERATE_SETUPVARS'] = 'ON' if self.compiler == 'vc14' else 'OFF'
 
     @defer.inlineCallbacks
     def packInstall(self):
@@ -194,6 +195,7 @@ class WinPackBindings(WinPackBuild):
             self.cmakepars['BUILD_opencv_python3'] = 'OFF'
         self.cmakepars['INSTALL_PDB'] = 'OFF'
         del self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL']
+        self.cmakepars['OPENCV_GENERATE_SETUPVARS'] = 'OFF'
 
 '''
 Builder for docs
