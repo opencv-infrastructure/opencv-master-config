@@ -165,6 +165,8 @@ class CommonFactory(BuilderNewStyle):
     def runPrepare(self):
         yield BuilderNewStyle.runPrepare(self)
 
+        self.env['BUILD_BRANCH'] = self.getProperty('branch', default='master')
+
         self.buildWithContrib = self.buildWithContrib and not isBranch24(self)  # precommit with 2.4 target
 
         if self.getProperty('build_contrib', default=None):
@@ -551,15 +553,19 @@ class CommonFactory(BuilderNewStyle):
 
 
     @defer.inlineCallbacks
-    def cmake(self, builddir='build', cmakedir=None):
+    def cmake(self, builddir='build', cmakedir=None, desc='cmake', cmakepars=None):
         if cmakedir is None:
             cmakedir = '../' + self.SRC_OPENCV
-        self.set_cmake_parameters()
+        if cmakepars is None:
+            self.set_cmake_parameters()
+            cmakepars_dict = self.cmakepars.copy()
+        else:
+            cmakepars_dict = cmakepars.copy()
         @renderer
         @defer.inlineCallbacks
         def cmake_command(props):
             cmakepars = {}
-            for key, value in self.cmakepars.items():
+            for key, value in cmakepars_dict.items():
                 value = yield interpolateParameter(value, props)
                 cmakepars[key] = value
             cmakepars = ' '.join(['-D%s=%s' % (key, value) \
@@ -574,8 +580,8 @@ class CommonFactory(BuilderNewStyle):
             defer.returnValue(command)
 
         step = Compile(command=cmake_command, env=self.env,
-            workdir=builddir, name='cmake', haltOnFailure=True,
-            descriptionDone='cmake', description='cmake',
+            workdir=builddir, name=desc, haltOnFailure=True,
+            descriptionDone=desc, description=desc,
             logfiles=dict(cache='CMakeCache.txt', vars='CMakeVars.txt', CMakeOutput='CMakeFiles/CMakeOutput.log', CMakeError='CMakeFiles/CMakeError.log'),
             warningPattern=self.r_warning_pattern, warnOnWarnings=True)
         yield self.processStep(step)
@@ -701,11 +707,13 @@ class CommonFactory(BuilderNewStyle):
 
             if isPythonTest(test):
                 lib_sub_dir = '/lib'
+                path_sep = ':'
                 if test == 'python3':
                     lib_sub_dir += '/python3'
                 if self.osType == OSType.WINDOWS:
                     lib_sub_dir += '/Release'
-                env['PYTHONPATH'] = Interpolate('%(prop:workdir)s/' + builddir + lib_sub_dir)
+                    path_sep = ';'
+                env['PYTHONPATH'] = Interpolate('%(prop:workdir)s/' + builddir + '/python_loader' + path_sep + '%(prop:workdir)s/' + builddir + lib_sub_dir)
 
             def getCommand(test, _testFilter, resultsFileOnSlave):
                 @renderer

@@ -84,8 +84,30 @@ class WinPackBuild(BaseFactory):
     @defer.inlineCallbacks
     def build(self):
         yield self.cmake()
-        yield self.compile(config='release', target='install', useClean=False)
         yield self.compile(config='debug', target='install', useClean=False)
+        yield self.compile(config='release', target='install', useClean=False)
+
+        if (self.branch == '3.4' or self.branch == 'master') and self.compiler == 'vc14':
+            yield self.compile(config='release', target='gen_opencv_python_source', useClean=False)
+            py_cmakepars = {}
+            py_cmakepars['OpenCV_BINARY_DIR'] = Interpolate('%(prop:workdir)s/build')
+            py_dir = '../../' + self.SRC_OPENCV + '/modules/python'
+
+            self.env['BUILD_PYTHON3'] = '35'
+            yield self.cmake(desc='cmake_py35', builddir='build/python_35', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_35', config='release', target='install', useClean=False)
+
+            self.env['BUILD_PYTHON3'] = '36'
+            yield self.cmake(desc='cmake_py36', builddir='build/python_36', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_36', config='release', target='install', useClean=False)
+
+            self.env['BUILD_PYTHON3'] = '37'
+            yield self.cmake(desc='cmake_py37', builddir='build/python_37', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_37', config='release', target='install', useClean=False)
+
+            del self.env['BUILD_PYTHON3']
+            yield self.cmake(desc='cmake_py27', builddir='build/python_27', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_27', config='release', target='install', useClean=False)
 
 
     @defer.inlineCallbacks
@@ -101,10 +123,8 @@ class WinPackBuild(BaseFactory):
 
     def getSlaves(self):
         if self.osType == OSType.WINDOWS:
-            if self.compiler in ['vc10', 'vc11']:
-                return []
             if self.compiler == 'vc14':
-                return ['windows-1', 'windows-2']
+                return ['windows-1']
             if self.compiler == 'vc15':
                 return ['windows-1']
         else:
@@ -137,6 +157,7 @@ class WinPackBuild(BaseFactory):
         self.cmakepars['INSTALL_PDB'] = 'ON'
         self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL'] = 'OFF'
         self.cmakepars['OPENCV_GENERATE_SETUPVARS'] = 'ON' if self.compiler == 'vc14' else 'OFF'
+        self.cmakepars['OPENCV_INSTALL_DATA_DIR_RELATIVE'] = '../../../../sources'
 
     @defer.inlineCallbacks
     def packInstall(self):
@@ -180,7 +201,7 @@ class WinPackBindings(WinPackBuild):
         if self.branch == '2.4':
             yield self.compile(config='release', target='modules/python/install', desc='python', useClean=False)
         else:
-            yield self.compile(config='release', target='modules/python2/install', desc='python', useClean=False)
+            pass  # uses standalone Python builds since 3.4.4 / 4.0.0
 
 
     def set_cmake_parameters(self):
@@ -190,7 +211,7 @@ class WinPackBindings(WinPackBuild):
         self.cmakepars['BUILD_opencv_java'] = 'ON'
         if self.branch == '2.4':
             self.cmakepars['BUILD_opencv_python'] = 'ON'
-        else:
+        elif self.branch == 'master':
             self.cmakepars['BUILD_opencv_python2'] = 'ON'
             self.cmakepars['BUILD_opencv_python3'] = 'OFF'
         self.cmakepars['INSTALL_PDB'] = 'OFF'
@@ -248,6 +269,12 @@ class WinPackTest(WinPackBuild):
         self.cmakepars['BUILD_SHARED_LIBS'] = 'ON' if self.buildShared else 'OFF'
         self.cmakepars['OpenCV_DIR'] = Interpolate('%(prop:workdir)s/build/distrib/opencv/build')
 
+    def getSlaves(self):
+        if self.osType == OSType.WINDOWS:
+            if self.compiler == 'vc14':
+                return ['windows-1', 'windows-2']
+            return ['windows-1']
+        raise Exception('Invalid configuration')
 
     @defer.inlineCallbacks
     def downloadWinPackMaster(self):
