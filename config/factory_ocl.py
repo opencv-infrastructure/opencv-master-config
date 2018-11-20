@@ -22,6 +22,9 @@ class OCL_factory(BaseFactory):
             (not self.builder_properties or not 'buildworker' in self.builder_properties):
             print('OCL: Excluding linux-3 from builder: {} (props = {})'.format(self.getName(), str(self.builder_properties)))
             self.useSlave.remove('linux-3')
+        if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-5' in self.useSlave:
+            print('OCL: Excluding linux-5 from builder: {} (props = {})'.format(self.getName(), str(self.builder_properties)))
+            self.useSlave.remove('linux-5')
 
     @defer.inlineCallbacks
     def runPrepare(self):

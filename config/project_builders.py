@@ -281,7 +281,7 @@ for branch in ['2.4', '3.4', 'master']:
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx'], platform=PLATFORM_SKYLAKE_X,
                         useName='openvino', dockerImage='ubuntu-openvino:16.04',
-                        useSlave=['linux-3'])),
+                        useSlave=['linux-3','linux-5'])),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx', 'opencl'], platform=PLATFORM_SKYLAKE_X,
@@ -567,7 +567,7 @@ addConfiguration(
                     useIPP=False,  # check OpenCV AVX2 code instead of IPP
                     builder_properties={'buildworker':'linux-1,linux-2'}),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False,
-                    builder_properties={'buildworker':'linux-3'}),
+                    builder_properties={'buildworker':'linux-3,linux-5'}),
             WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15, cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'}),
             WindowsPrecommit64(builderName='precommit_windows64'),
             #WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),

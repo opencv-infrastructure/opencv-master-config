@@ -147,6 +147,7 @@ class CommonFactory(BuilderNewStyle):
                 if self.osType == OSType.LINUX:
                     if self.is64 is None or self.is64:
                         self.useSlave += ['linux-3']
+                        self.useSlave += ['linux-5']
             if self.useSlave == []:
                 self.useSlave = None
 
