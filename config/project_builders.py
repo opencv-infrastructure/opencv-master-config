@@ -582,7 +582,7 @@ addConfiguration(
             ARMv8Precommit(builderName='precommit_armv8', tags=['arm']),
             DocsPrecommit(builderName='precommit_docs', tags=['docs']),
             precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack']),
-            LinuxPrecommit(builderName='precommit_custom_linux', dockerImage='is_not_set_but_required'),
+            LinuxPrecommit(builderName='precommit_custom_linux', useIPP=None, dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
             #contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64-icc', dockerImage='ubuntu-icc:16.04'),
