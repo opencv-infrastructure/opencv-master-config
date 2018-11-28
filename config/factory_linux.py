@@ -36,14 +36,18 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                     if fname in stdout:
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
-            print 'ABI: fallback to 3.4.0'
-            return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.0.abi.tar.gz'}
+            if isBranch34(builder):
+                print 'ABI: fallback to 3.4.4'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.4.abi.tar.gz'}
+            else:
+                print 'ABI: fallback to 4.0.0'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.0.0.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.4.0')
+        verString = self.getProperty('commit-description', '3.4.4' if isBranch34(self.build) else '4.0.0')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
@@ -65,10 +69,12 @@ class AbiCompareCommand(ShellCommand):
         logFile = "abi_log.txt"  # TODO Used?
         cmd = builder.envCmd.split() + [
             "abi-compliance-checker",
+        ] + (["-api"] if not isBranch34(builder) else []) + [
             "-l", "opencv",
             "-old", Interpolate("%(prop:abi_base_file)s"),
             "-new", resultFile,
             "-report-path", reportFile,
+        ] + ([
             "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
                 "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
                 ".*experimental_.*" + \
@@ -76,7 +82,7 @@ class AbiCompareCommand(ShellCommand):
                 "|.*2cv10AutoBuffer.*" + \
                 "|_ZN2cv7MomentsC.*" + \
                 "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*"
-        ]
+        ] if isBranch34(builder) else [])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
 
@@ -122,7 +128,7 @@ class LinuxPrecommitFactory(BaseFactory):
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
-        if isBranch34(self):
+        if isNotBranch24(self):
             self.cmakepars['GENERATE_ABI_DESCRIPTOR'] = 'ON'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = self.installPath
 
@@ -133,7 +139,7 @@ class LinuxPrecommitFactory(BaseFactory):
         yield BaseFactory.compile(self, config='debug' if self.isDebug else 'release', target='install')
         if isNotBranch24(self):
             yield self.check_build()
-            if isBranch34(self) and not self.isContrib:
+            if isNotBranch24(self) and not self.isContrib:
                 if bool(self.getProperty('ci-run_abi_check', default=self.run_abi_check)):
                     yield self.check_abi()
 
