@@ -82,7 +82,14 @@ class AbiCompareCommand(ShellCommand):
                 "|.*2cv10AutoBuffer.*" + \
                 "|_ZN2cv7MomentsC.*" + \
                 "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*"
-        ] if isBranch34(builder) else [])
+        ] if isBranch34(builder) else [
+            "-skip-internal",
+            "_ZN2cv11GGPUContext.*|" + \
+            "_ZN2cv10GGPUKernel.*|" + \
+            ".*scalar_wrapper_gpu.*|" + \
+            "_ZN2cv4gapi3gpu7backendEv|" + \
+            "_ZN2cv4gapi7imgproc3gpu7kernelsEv"
+        ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
 
