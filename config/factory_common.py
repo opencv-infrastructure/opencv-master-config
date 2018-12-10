@@ -413,6 +413,7 @@ class CommonFactory(BuilderNewStyle):
     @defer.inlineCallbacks
     def initialize(self):
         builddir = self.getProperty('builddir', default='build_directory').replace('\\', '/')
+        self.env['BUILD_DIR_PATH'] = builddir
         self.env['BUILD_DIR'] = os.path.basename(builddir)
         timestamp = datetime.datetime.now()
         timestamp_str = timestamp.strftime('%Y%m%d-%H%M%S')
@@ -422,6 +423,14 @@ class CommonFactory(BuilderNewStyle):
         # run buildenv with dummy command to remove Git index.lock
         env = self.env.copy()
         env['BUILD_INITIALIZE'] = '1'
+        ci_branch = self.getProperty('ci-branch', default=None)
+        if ci_branch is None:
+            ci_branch = self.getProperty('branch', default=None)
+        if ci_branch and not ci_branch.startswith('2.4'):
+            self.env['BUILD_CI_BRANCH'] = ci_branch
+            env['BUILD_CI_BRANCH'] = ci_branch
+            env['BUILD_INIT_CI'] = '1'
+            env['BUILD_CI_URL'] = 'git://code.ocv/opencv/opencv-ci.git'
         step = ShellCommand(name='init', descriptionDone=' ', description=' ',
                 command=self.envCmd + 'echo Initialize', env=env, workdir='.',
                 maxTime=24*60*60, timeout=24*60*60,

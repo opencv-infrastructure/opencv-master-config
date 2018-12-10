@@ -196,6 +196,9 @@ class GitHubContext(pullrequest.context.Context):
 
         re_builder = re.escape(b.name)
 
+        if self.pushBuildProperty(properties, pr.description, 'ci_branch[-:]' + re_builder, 'ci-branch') is None:
+            self.pushBuildProperty(properties, pr.description, 'ci_branch', 'ci-branch')
+
         if self.isWIP(pr):
             self.pushBuildProperty(properties, pr.description, 'test_module[s]?', 'modules_filter')
             self.pushBuildProperty(properties, pr.description, 'test[s]?_filter[s]?', 'test_filter')
