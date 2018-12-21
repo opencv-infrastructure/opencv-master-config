@@ -250,6 +250,9 @@ class GitHubContext(pullrequest.context.Context):
         if self.pushBuildProperty(properties, pr.description, 'test_opencl[-:]' + re_builder, 'test_opencl') is None:
             self.pushBuildProperty(properties, pr.description, 'test_opencl', 'test_opencl')
 
+        if self.pushBuildProperty(properties, pr.description, 'test_gradle[-:]' + re_builder, 'test_gradle') is None:
+            self.pushBuildProperty(properties, pr.description, 'test_gradle', 'test_gradle')
+
 
 
     @defer.inlineCallbacks

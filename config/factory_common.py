@@ -130,7 +130,7 @@ class CommonFactory(BuilderNewStyle):
         if self.useSlave is None:
             self.useSlave = []
             if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY, PLATFORM_SKYLAKE]:
-                if self.osType == OSType.LINUX or self.osType == OSType.ANDROID:
+                if self.osType == OSType.LINUX:
                     if self.is64 is None or self.is64:
                         self.useSlave += ['linux-1', 'linux-2', 'linux-4']
                         #if not self.isPrecommit:
@@ -143,6 +143,10 @@ class CommonFactory(BuilderNewStyle):
                     self.useSlave += ['macosx-1', 'macosx-2']
                     #if not self.isPrecommit:
                     #    self.useSlave = ['macosx-1']
+                elif self.osType == OSType.ANDROID:
+                    self.useSlave += ['linux-4']
+                    if self.branch != 'master':
+                        self.useSlave += ['linux-1', 'linux-2']
             if self.platform in [PLATFORM_SKYLAKE_X, PLATFORM_ANY]:
                 if self.osType == OSType.LINUX:
                     if self.is64 is None or self.is64:
@@ -178,7 +182,7 @@ class CommonFactory(BuilderNewStyle):
                 default_docker = (None, 'ubuntu:14.04') if not isBranchMaster(self) else (None, 'ubuntu:16.04')
                 self.dockerImage = default_docker if not (self.is64 is False) else (None, 'ubuntu32:16.04')
             elif self.osType == OSType.ANDROID:
-                self.dockerImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android')
+                self.dockerImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android-gradle')
             else:
                 # not applicable
                 pass
@@ -313,6 +317,9 @@ class CommonFactory(BuilderNewStyle):
             stages_str = str(stages_str)
             stages = stages_str.split(',')
             for stage in stages:
+                if stage == 'upload_release':
+                    yield self.upload_release()
+                    continue
                 env = self.env.copy()
                 env['BUILD_STAGE'] = stage
                 env['BUILD_SRC_OPENCV'] = '../' + self.SRC_OPENCV
@@ -560,6 +567,9 @@ class CommonFactory(BuilderNewStyle):
 
         if self.getProperty('with_tbb', default=None):
             self.cmakepars['WITH_TBB'] = 'ON' if self.getProperty('with_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
+
+        if self.osType == OSType.WINDOWS:
+            self.cmakepars['OPENCV_PYTHON_INSTALL_PATH'] = 'python'
 
 
     @defer.inlineCallbacks

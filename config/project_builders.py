@@ -262,7 +262,9 @@ for branch in ['2.4', '3.4', 'master']:
                 SetOfBuilders(
                     factory_class=AndroidPackFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'android_pack'], platform=PLATFORM_DEFAULT,
-                                     osType=OSType.ANDROID, is64=True, useName='pack', useSlave=['linux-1','linux-2','linux-4'])
+                                     osType=OSType.ANDROID, is64=True, useName='pack',
+                                     useSlave=['linux-1','linux-2','linux-4'] if branch != 'master' else ['linux-4']
+                    )
                 ),
                 SetOfBuilders(
                     factory_class=ARMv8Factory,
@@ -397,7 +399,7 @@ for branch in ['2.4', '3.4', 'master']:
                     factory_class=AndroidPackFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.ANDROID, is64=True, useName='pack',
-                                     useSlave=['linux-1','linux-2','linux-4']
+                                     useSlave=['linux-1','linux-2','linux-4'] if branch != 'master' else ['linux-4']
                     )
                 ),
             ] if branch == '2.4' else []) + [
@@ -620,11 +622,15 @@ addConfiguration(
             MacOSXPrecommit(builderName='precommit_macosx'),
             OCLMacPrecommit(builderName='precommit_opencl_macosx'),
             iOSPrecommit(builderName='precommit_ios', tags=['ios_pack']),
-            AndroidPrecommit(builderName='precommit_android', useSlave=['linux-1','linux-2','linux-4']),
+            AndroidPrecommit(builderName='precommit_android',
+                    useSlave=['linux-1','linux-2','linux-4'],
+                    builder_properties={'buildworker':'linux-4'}),
             ARMv7Precommit(builderName='precommit_armv7', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
             ARMv8Precommit(builderName='precommit_armv8', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
             DocsPrecommit(builderName='precommit_docs', tags=['docs'], useSlave=['linux-1','linux-2','linux-4']),
-            precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack'], useSlave=['linux-1','linux-2','linux-4']),
+            precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack'],
+                    useSlave=['linux-1','linux-2','linux-4'],
+                    builder_properties={'buildworker':'linux-4'}),
             LinuxPrecommit(builderName='precommit_custom_linux', useIPP=None, dockerImage='is_not_set_but_required'),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
@@ -638,11 +644,15 @@ addConfiguration(
             contrib(MacOSXPrecommit)(builderName='precommit-contrib_macosx'),
             contrib(OCLMacPrecommit)(builderName='precommit-contrib_opencl_macosx'),
             contrib(iOSPrecommit)(builderName='precommit-contrib_ios', tags=['ios_pack']),
-            contrib(AndroidPrecommit)(builderName='precommit-contrib_android', useSlave=['linux-1','linux-2','linux-4']),
+            contrib(AndroidPrecommit)(builderName='precommit-contrib_android',
+                    useSlave=['linux-1','linux-2','linux-4'],
+                    builder_properties={'buildworker':'linux-4'}),
             contrib(ARMv7Precommit)(builderName='precommit-contrib_armv7', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
             contrib(ARMv8Precommit)(builderName='precommit-contrib_armv8', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
             contrib(DocsPrecommit)(builderName='precommit-contrib_docs', tags=['docs'], useSlave=['linux-1','linux-2','linux-4']),
-            contrib(precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory)))(builderName='precommit-contrib_pack_android', tags=['android_pack'], useSlave=['linux-1','linux-2','linux-4']),
+            contrib(precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory)))(builderName='precommit-contrib_pack_android', tags=['android_pack'],
+                    useSlave=['linux-1','linux-2','linux-4'],
+                    builder_properties={'buildworker':'linux-4'}),
             contrib(LinuxPrecommit)(builderName='precommit-contrib_custom_linux64', dockerImage='is_not_set_but_required'),
         ]
     )

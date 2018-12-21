@@ -5,7 +5,7 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import MakeDirectory
 
 from factory_common import CommonFactory
-from build_utils import OSType, isBranch24
+from build_utils import OSType, isBranch24, isBranch34
 
 
 
@@ -44,24 +44,33 @@ class AndroidPackFactory(CommonFactory):
         step = \
             ShellCommand(
                 name="test cmake",
-                command=self.envCmd + ' python ../opencv/platforms/android/build-tests/test_cmake_build.py OpenCV-android-sdk/sdk/native/jni',
+                command=self.envCmd + ' python ../' + self.SRC_OPENCV + '/platforms/android/build-tests/test_cmake_build.py OpenCV-android-sdk/sdk/native/jni',
                 workdir='build',
                 env=self.env)
         yield self.processStep(step)
-        step = \
-            ShellCommand(
-                name="test ant",
-                command=self.envCmd + ' python ../opencv/platforms/android/build-tests/test_ant_build.py OpenCV-android-sdk/sdk/java OpenCV-android-sdk/samples',
-                workdir='build',
-                env=self.env)
-        yield self.processStep(step)
-        step = \
-            ShellCommand(
-                name="test ndk",
-                command=self.envCmd + ' python ../opencv/platforms/android/build-tests/test_ndk_build.py OpenCV-android-sdk/sdk/native/jni',
-                workdir='build',
-                env=self.env)
-        yield self.processStep(step)
+        if isBranch34(self):  # OpenCV <= 3.4.5
+            step = \
+                ShellCommand(
+                    name="test ant",
+                    command=self.envCmd + ' python ../' + self.SRC_OPENCV + '/platforms/android/build-tests/test_ant_build.py OpenCV-android-sdk/sdk/java OpenCV-android-sdk/samples',
+                    workdir='build',
+                    env=self.env)
+            yield self.processStep(step)
+            step = \
+                ShellCommand(
+                    name="test ndk",
+                    command=self.envCmd + ' python ../' + self.SRC_OPENCV + '/platforms/android/build-tests/test_ndk_build.py OpenCV-android-sdk/sdk/native/jni',
+                    workdir='build',
+                    env=self.env)
+            yield self.processStep(step)
+        if self.getProperty('test_gradle', default=None):
+            step = \
+                ShellCommand(
+                    name="test gradle",
+                    command=self.envCmd + ' ../' + self.SRC_OPENCV + '/platforms/android/build-tests/test_gradle.sh OpenCV-android-sdk',
+                    workdir='build',
+                    env=self.env)
+            yield self.processStep(step)
 
 
     @defer.inlineCallbacks
