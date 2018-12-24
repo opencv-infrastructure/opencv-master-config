@@ -91,6 +91,7 @@ class AbiCompareCommand(ShellCommand):
             "_ZN2cv4gapi3gpu7backendEv|" + \
             "_ZN2cv4gapi7imgproc3gpu7kernelsEv" + \
             "|.*Durand.*" + \
+            "|_ZN2cv3dnn16readNetFromTorchERKNSt7__cxx1112basic_stringIcEEb" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
