@@ -568,6 +568,10 @@ class CommonFactory(BuilderNewStyle):
         if self.getProperty('with_tbb', default=None):
             self.cmakepars['WITH_TBB'] = 'ON' if self.getProperty('with_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
 
+        build_pkgconfig = self.getProperty('build_pkgconfig', default=None)
+        if build_pkgconfig is not None:
+            self.cmakepars['OPENCV_GENERATE_PKGCONFIG'] = 'ON' if bool(build_pkgconfig) else 'OFF'
+
         if self.osType == OSType.WINDOWS:
             self.cmakepars['OPENCV_PYTHON_INSTALL_PATH'] = 'python'
 

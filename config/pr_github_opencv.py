@@ -199,59 +199,51 @@ class GitHubContext(pullrequest.context.Context):
         if self.pushBuildProperty(properties, pr.description, 'ci_branch[-:]' + re_builder, 'ci-branch') is None:
             self.pushBuildProperty(properties, pr.description, 'ci_branch', 'ci-branch')
 
-        if self.isWIP(pr):
-            self.pushBuildProperty(properties, pr.description, 'test_module[s]?', 'modules_filter')
-            self.pushBuildProperty(properties, pr.description, 'test[s]?_filter[s]?', 'test_filter')
-            self.pushBuildProperty(properties, pr.description, 'build_examples', 'build_examples')
-            if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS[-:]' + re_builder, 'build_cxxflags') is None:
-                self.pushBuildProperty(properties, pr.description, 'CXXFLAGS', 'build_cxxflags')
-            if self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA[-:]' + re_builder, 'build_cxxflags_extra') is None:
-                self.pushBuildProperty(properties, pr.description, 'CXXFLAGS_EXTRA', 'build_cxxflags_extra')
-            if self.pushBuildProperty(properties, pr.description, 'CPU_BASELINE[-:]' + re_builder, 'build_cpu_baseline') is None:
-                self.pushBuildProperty(properties, pr.description, 'CPU_BASELINE', 'build_cpu_baseline')
-            if self.pushBuildProperty(properties, pr.description, 'CPU_DISPATCH[-:]' + re_builder, 'build_cpu_dispatch') is None:
-                self.pushBuildProperty(properties, pr.description, 'CPU_DISPATCH', 'build_cpu_dispatch')
+        def _processProperty(regex, prop_name):
+            if self.pushBuildProperty(properties, pr.description, regex + '[-:]' + re_builder, prop_name) is None:
+                if isWIP:
+                    self.pushBuildProperty(properties, pr.description, regex, prop_name)
 
-        if self.isWIP(pr) or b.name in ['Custom', 'custom']:
-          if self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata') is None:
-              self.pushBuildProperty(properties, pr.description, 'test_bigdata', 'test_bigdata')
+        def _processPropertyWIP(regex, prop_name):
+            if self.pushBuildProperty(properties, pr.description, regex + '[-:]' + re_builder, prop_name) is None:
+                if isWIP:
+                    self.pushBuildProperty(properties, pr.description, regex, prop_name)
 
-        if self.pushBuildProperty(properties, pr.description, 'test_module[s]?_force[-:]' + re_builder, 'modules_force') is None:
-            self.pushBuildProperty(properties, pr.description, 'test_module[s]?_force', 'modules_force')
+        isWIP = self.isWIP(pr)
+        if isWIP or b.name in ['Custom', 'custom']:
+            _processPropertyWIP('test_module[s]?', 'modules_filter')
+            _processPropertyWIP('test[s]?_filter[s]?', 'test_filter')
+            _processPropertyWIP('build_examples', 'build_examples')
+            _processPropertyWIP('CXXFLAGS', 'build_cxxflags')
+            _processPropertyWIP('CXXFLAGS_EXTRA', 'build_cxxflags_extra')
+            _processPropertyWIP('CPU_BASELINE', 'build_cpu_baseline')
+            _processPropertyWIP('CPU_DISPATCH', 'build_cpu_dispatch')
+            _processPropertyWIP('test_bigdata', 'test_bigdata')
+
+        _processProperty('test_module[s]?_force', 'modules_force')
 
         self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
 
-        if self.pushBuildProperty(properties, pr.description, 'buildworker[-:]' + re_builder, 'buildworker') is None:
-            self.pushBuildProperty(properties, pr.description, 'buildworker', 'buildworker')
+        _processProperty('buildworker', 'buildworker')
 
-        self.pushBuildProperty(properties, pr.description, 'build_tbb', 'build_tbb')
-        self.pushBuildProperty(properties, pr.description, 'with_tbb', 'with_tbb')
+        _processProperty('build_tbb', 'build_tbb')
+        _processProperty('with_tbb', 'with_tbb')
+        _processProperty('disable_ipp', 'disable_ipp')
 
-        self.pushBuildProperty(properties, pr.description, 'disable_ipp', 'disable_ipp')
+        _processProperty('build_world', 'build_world')
+        _processProperty('build_shared', 'build_shared')
+        _processProperty('build_contrib', 'build_contrib')
+        _processProperty('build_pkgconfig', 'build_pkgconfig')
 
-        if self.pushBuildProperty(properties, pr.description, 'build_world[-:]' + re_builder, 'build_world') is None:
-            self.pushBuildProperty(properties, pr.description, 'build_world', 'build_world')
-
-        if self.pushBuildProperty(properties, pr.description, 'build_shared[-:]' + re_builder, 'build_shared') is None:
-            self.pushBuildProperty(properties, pr.description, 'build_shared', 'build_shared')
-
-        if self.pushBuildProperty(properties, pr.description, 'build_contrib[-:]' + re_builder, 'build_contrib') is None:
-            self.pushBuildProperty(properties, pr.description, 'build_contrib', 'build_contrib')
-
-        self.pushBuildProperty(properties, pr.description, 'build_parallel_tests', 'parallel_tests')
-
-        if self.pushBuildProperty(properties, pr.description, 'test_timeout[-:]' + re_builder, 'test_timeout') is None:
-            self.pushBuildProperty(properties, pr.description, 'test_timeout', 'test_timeout')
-        if self.pushBuildProperty(properties, pr.description, 'test_maxtime[-:]' + re_builder, 'test_maxtime') is None:
-            self.pushBuildProperty(properties, pr.description, 'test_maxtime', 'test_maxtime')
+        _processProperty('build_parallel_tests', 'parallel_tests')
+        _processProperty('test_timeout', 'test_timeout')
+        _processProperty('test_maxtime', 'test_maxtime')
 
         self.pushBuildProperty(properties, pr.description, 'linter_checks', 'linter_checks')
 
-        if self.pushBuildProperty(properties, pr.description, 'test_opencl[-:]' + re_builder, 'test_opencl') is None:
-            self.pushBuildProperty(properties, pr.description, 'test_opencl', 'test_opencl')
+        _processProperty('test_opencl', 'test_opencl')
 
-        if self.pushBuildProperty(properties, pr.description, 'test_gradle[-:]' + re_builder, 'test_gradle') is None:
-            self.pushBuildProperty(properties, pr.description, 'test_gradle', 'test_gradle')
+        _processProperty('test_gradle', 'test_gradle')  # Android
 
 
 
