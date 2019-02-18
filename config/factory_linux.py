@@ -154,6 +154,7 @@ class LinuxPrecommitFactory(BaseFactory):
             if isNotBranch24(self) and not self.isContrib:
                 if bool(self.getProperty('ci-run_abi_check', default=self.run_abi_check)):
                     yield self.check_abi()
+        yield self.optional_build_gapi_standalone()
 
 
     @defer.inlineCallbacks

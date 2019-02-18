@@ -493,6 +493,7 @@ class CommonFactory(BuilderNewStyle):
     def build(self):
         yield self.cmake()
         yield self.compile(config='debug' if self.isDebug else 'release')
+        yield self.optional_build_gapi_standalone()
 
     def set_cmake_parameters(self):
         if self.getProperty('build_shared', default=None) is not None:
@@ -939,4 +940,39 @@ class CommonFactory(BuilderNewStyle):
 
     @defer.inlineCallbacks
     def after_tests_steps(self):
+        yield None
+
+    @defer.inlineCallbacks
+    def optional_build_gapi_standalone(self):
+        if self.getProperty('build_gapi_standalone', default=None):
+            ade_dir = str(self.getProperty('build_gapi_standalone', default='error_ade_version_is_required'))
+            step = RemoveDirectory(
+                dir='build_ade', hideStepIf=lambda result, s: result == SUCCESS,
+                haltOnFailure=True)
+            yield self.processStep(step)
+            step = RemoveDirectory(
+                dir='build_gapi_standalone', hideStepIf=lambda result, s: result == SUCCESS,
+                haltOnFailure=True)
+            yield self.processStep(step)
+            step = MakeDirectory(
+                dir='build_ade', hideStepIf=lambda result, s: result == SUCCESS,
+                haltOnFailure=True)
+            yield self.processStep(step)
+            step = MakeDirectory(
+                dir='build_gapi_standalone', hideStepIf=lambda result, s: result == SUCCESS,
+                haltOnFailure=True)
+            yield self.processStep(step)
+
+            yield self.cmake(builddir='build_ade', cmakedir='../build/3rdparty/ade/' + ade_dir, desc='cmake ade',
+                cmakepars={
+                    'CMAKE_INSTALL_PREFIX': 'install',
+                })
+            yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_ade', target='install', desc='build ade')
+
+            yield self.cmake(builddir='build_gapi_standalone', cmakedir='../' + self.SRC_OPENCV + '/modules/gapi', desc='cmake gapi standalone',
+                cmakepars={
+                    'ade_DIR': self.getProperty('workdir') + '/build_ade/install/share/ade',
+                    'CMAKE_INSTALL_PREFIX': 'install',
+                })
+            yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_gapi_standalone', target='all', desc='build gapi standalone')
         yield None

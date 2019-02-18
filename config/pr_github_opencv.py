@@ -245,6 +245,7 @@ class GitHubContext(pullrequest.context.Context):
 
         _processProperty('test_gradle', 'test_gradle')  # Android
 
+        _processProperty('build_gapi_standalone', 'build_gapi_standalone')
 
 
     @defer.inlineCallbacks
