@@ -944,8 +944,13 @@ class CommonFactory(BuilderNewStyle):
 
     @defer.inlineCallbacks
     def optional_build_gapi_standalone(self):
-        if self.getProperty('build_gapi_standalone', default=None):
-            ade_dir = str(self.getProperty('build_gapi_standalone', default='error_ade_version_is_required'))
+        ade_dir = self.getProperty('build_gapi_standalone', default=None)
+        if ade_dir:
+            ade_dir = str(ade_dir)
+            if re.search(r'(/|\\)', ade_dir) is not None:
+                print('ERROR: Not allowed build_gapi_standalone value: ' + ade_dir)
+                ade_dir = None
+        if ade_dir:
             step = RemoveDirectory(
                 dir='build_ade', hideStepIf=lambda result, s: result == SUCCESS,
                 haltOnFailure=True)
