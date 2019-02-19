@@ -965,12 +965,14 @@ class CommonFactory(BuilderNewStyle):
 
             yield self.cmake(builddir='build_ade', cmakedir='../build/3rdparty/ade/' + ade_dir, desc='cmake ade',
                 cmakepars={
+                    'CMAKE_BUILD_TYPE': 'Debug' if self.isDebug else 'Release',
                     'CMAKE_INSTALL_PREFIX': 'install',
                 })
             yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_ade', target='install', desc='build ade')
 
             yield self.cmake(builddir='build_gapi_standalone', cmakedir='../' + self.SRC_OPENCV + '/modules/gapi', desc='cmake gapi standalone',
                 cmakepars={
+                    'CMAKE_BUILD_TYPE': 'Debug' if self.isDebug else 'Release',
                     'ade_DIR': self.getProperty('workdir') + '/build_ade/install/share/ade',
                     'CMAKE_INSTALL_PREFIX': 'install',
                 })
