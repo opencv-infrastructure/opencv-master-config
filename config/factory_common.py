@@ -981,5 +981,8 @@ class CommonFactory(BuilderNewStyle):
                     'ade_DIR': self.getProperty('workdir') + '/build_ade/install/share/ade',
                     'CMAKE_INSTALL_PREFIX': 'install',
                 })
-            yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_gapi_standalone', target='all', desc='build gapi standalone')
+            if self.osType == OSType.WINDOWS:
+                yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_gapi_standalone', desc='build gapi standalone')
+            else:
+                yield self.compile(config='debug' if self.isDebug else 'release', builddir='build_gapi_standalone', target='all', desc='build gapi standalone')
         yield None
