@@ -21,17 +21,27 @@ class AndroidPackFactory(CommonFactory):
 
     @defer.inlineCallbacks
     def run_build_script(self):
-        extra_opts = [] if isBranch24(self) else ['--extra_pack', '2.4.13:/opt/android/pack_2.4/']
+        extra_opts = ['--extra_pack', '2.4.13:/opt/android/pack_2.4/'] if isBranch34(self) else []
         if self.buildWithContrib:
             extra_opts += ['--extra_modules_path', '../' + self.SRC_OPENCV_CONTRIB + '/modules']
-        extra_opts = ' '.join(extra_opts)
+        config_prop = self.getProperty('android_pack_config', default=None)
+        if config_prop:
+            extra_opts += ['--config', str(config_prop)]
         env = self.env.copy()
         if isBranch24(self):
             env['ANDROID_NDK'] = '/opt/android/android-ndk-r8e'
+        cmd = [
+            'python',
+            '../' + self.SRC_OPENCV + '/platforms/android/build_sdk.py',
+            '--build_doc',
+        ] + extra_opts + [
+            '.',
+            '../' + self.SRC_OPENCV
+        ]
         step = \
             ShellCommand(
                 name="build sdk",
-                command=self.envCmd + ' python ../' + self.SRC_OPENCV + '/platforms/android/build_sdk.py --build_doc ' + extra_opts + ' . ../' + self.SRC_OPENCV,
+                command=self.envCmdList + cmd,
                 workdir='build',
                 env=env)
         yield self.processStep(step)

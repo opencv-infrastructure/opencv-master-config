@@ -196,18 +196,16 @@ class GitHubContext(pullrequest.context.Context):
 
         re_builder = re.escape(b.name)
 
-        if self.pushBuildProperty(properties, pr.description, 'ci_branch[-:]' + re_builder, 'ci-branch') is None:
-            self.pushBuildProperty(properties, pr.description, 'ci_branch', 'ci-branch')
-
         def _processProperty(regex, prop_name):
             if self.pushBuildProperty(properties, pr.description, regex + '[-:]' + re_builder, prop_name) is None:
-                if isWIP:
-                    self.pushBuildProperty(properties, pr.description, regex, prop_name)
+                self.pushBuildProperty(properties, pr.description, regex, prop_name)
 
         def _processPropertyWIP(regex, prop_name):
             if self.pushBuildProperty(properties, pr.description, regex + '[-:]' + re_builder, prop_name) is None:
                 if isWIP:
                     self.pushBuildProperty(properties, pr.description, regex, prop_name)
+
+        _processProperty('ci_branch', 'ci-branch')
 
         isWIP = self.isWIP(pr)
         if isWIP or b.name in ['Custom', 'custom']:
@@ -243,6 +241,7 @@ class GitHubContext(pullrequest.context.Context):
 
         _processProperty('test_opencl', 'test_opencl')
 
+        _processProperty('android_pack_config', 'android_pack_config')  # Android
         _processProperty('test_gradle', 'test_gradle')  # Android
 
         _processProperty('build_gapi_standalone', 'build_gapi_standalone')

@@ -398,8 +398,12 @@ class CommonFactory(BuilderNewStyle):
 
 
     def initConstants(self):
-        assert not self.envCmd is None
-        self.envCmd += ' '
+        if self.envCmd is None:
+            self.envCmdList = []
+            self.envCmd = ''
+        else:
+            self.envCmdList = [self.envCmd]
+            self.envCmd += ' '
 
         if self.osType != OSType.ANDROID:
             if self.compiler is None:
