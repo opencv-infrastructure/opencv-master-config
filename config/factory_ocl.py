@@ -104,7 +104,9 @@ class OCL_factory(BaseFactory):
 
             self.env = env_backup
 
-            yield self.bb_build.processStepsInParallel(steps, min(int(self.getProperty('parallel_tests', 2)), 2) if isNotBranch24(self) else 1)
+            parallel_N = min(int(self.getProperty('parallel_tests', 2)), 2) if isNotBranch24(self) else 1
+            print('Running {} tests in parallel ({})'.format(len(steps), parallel_N))
+            yield self.bb_build.processStepsInParallel(steps, parallel_N)
 
         if not self.testOpenCL or self.testOpenCLWithPlain:
             env_backup = self.env.copy()

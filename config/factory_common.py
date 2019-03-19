@@ -889,7 +889,9 @@ class CommonFactory(BuilderNewStyle):
 
         yield add_tests(True, self.getTestList(False), self.getTestList(True))
 
-        yield self.bb_build.processStepsInParallel(steps, self.getProperty('parallel_tests', 4))
+        parallel_N = self.getProperty('parallel_tests', 4)
+        print('Running {} tests in parallel ({})'.format(len(steps), parallel_N))
+        yield self.bb_build.processStepsInParallel(steps, parallel_N)
 
 
     @defer.inlineCallbacks
