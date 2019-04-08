@@ -37,11 +37,11 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             if isBranch34(builder):
-                print 'ABI: fallback to 3.4.4'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.4.abi.tar.gz'}
+                print 'ABI: fallback to 3.4.6'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.6.abi.tar.gz'}
             else:
-                print 'ABI: fallback to 4.0.0'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-4.0.0.abi.tar.gz'}
+                print 'ABI: fallback to 4.1.0'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.1.0.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
