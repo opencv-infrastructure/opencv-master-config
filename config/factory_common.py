@@ -123,7 +123,7 @@ class CommonFactory(BuilderNewStyle):
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
         self.suppressions = None
-        self.dockerImage = kwargs.pop('dockerImage', None)
+        self.buildImage = kwargs.pop('buildImage', kwargs.pop('dockerImage', None))
 
         BuilderNewStyle.__init__(self, **kwargs)
 
@@ -177,12 +177,12 @@ class CommonFactory(BuilderNewStyle):
         if self.getProperty('build_contrib', default=None):
             self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
 
-        if self.dockerImage is None:
+        if self.buildImage is None:
             if self.osType == OSType.LINUX:
                 default_docker = (None, 'ubuntu:14.04') if not isBranchMaster(self) else (None, 'ubuntu:16.04')
-                self.dockerImage = default_docker if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+                self.buildImage = default_docker if not (self.is64 is False) else (None, 'ubuntu32:16.04')
             elif self.osType == OSType.ANDROID:
-                self.dockerImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android-gradle')
+                self.buildImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android-gradle')
             else:
                 # not applicable
                 pass
@@ -193,12 +193,12 @@ class CommonFactory(BuilderNewStyle):
                 self.SRC_OPENCV = prefix + '/' + self.SRC_OPENCV
                 self.SRC_OPENCV_EXT = prefix + '/' + self.SRC_OPENCV_EXT
                 self.SRC_OPENCV_CONTRIB = prefix + '/' + self.SRC_OPENCV_CONTRIB
-        dockerImage = self.bb_requests[0].properties.getProperty('docker_image', default=None)
-        if dockerImage:
-            self.dockerImage = (None, dockerImage)
-        if self.dockerImage:
-            dockerImageName = self.dockerImage[1] if isinstance(self.dockerImage, (list, tuple)) else self.dockerImage
-            self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', dockerImageName))
+        buildImage = self.bb_requests[0].properties.getProperty('build_image', default=None)
+        if buildImage:
+            self.buildImage = (None, buildImage)
+        if self.buildImage:
+            buildImageName = self.buildImage[1] if isinstance(self.buildImage, (list, tuple)) else self.buildImage
+            self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', buildImageName))
 
         if self.osType == OSType.ANDROID and self.suppressions is None:
             self.suppressions = [[None, re.compile(r'\[apkbuilder\]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
@@ -931,8 +931,8 @@ class CommonFactory(BuilderNewStyle):
 
     def getNameSuffix(self):
         res = '' if self.buildShared else '-static'
-        if self.dockerImage and isinstance(self.dockerImage, (list, tuple)) and self.dockerImage[0]:
-            res += self.dockerImage[0]
+        if self.buildImage and isinstance(self.buildImage, (list, tuple)) and self.buildImage[0]:
+            res += self.buildImage[0]
         if self.cmake_toolset:
             res += self.cmake_toolset[0]
         if self.isDebug:

@@ -36,9 +36,9 @@ class OCL_factory(BaseFactory):
         if isBranch24(self):
             self.testOpenCL = False
 
-        if self.testOpenCL and self.dockerImage is None:
+        if self.testOpenCL and self.buildImage is None:
             if self.osType == OSType.LINUX:
-                self.dockerImage = (None, 'ubuntu:16.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+                self.buildImage = (None, 'ubuntu:16.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
 
         yield BaseFactory.runPrepare(self)
 

@@ -44,7 +44,7 @@ class Docs_factory(BaseFactory):
         dockerImage = kwargs.pop('dockerImage', (None, 'docs'))
         BaseFactory.__init__(self, *args, useName=useName, buildDocs=True, runTests=False, dockerImage=dockerImage, **kwargs)
         if not self.isPrecommit and self.branch != '2.4':
-            self.dockerImage = (None, 'docs-js')
+            self.buildImage = (None, 'docs-js')
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)

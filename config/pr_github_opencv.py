@@ -216,11 +216,13 @@ class GitHubContext(pullrequest.context.Context):
             _processPropertyWIP('CXXFLAGS_EXTRA', 'build_cxxflags_extra')
             _processPropertyWIP('CPU_BASELINE', 'build_cpu_baseline')
             _processPropertyWIP('CPU_DISPATCH', 'build_cpu_dispatch')
-            _processPropertyWIP('test_bigdata', 'test_bigdata')
+
+        self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata')
 
         _processProperty('test_module[s]?_force', 'modules_force')
 
-        self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'docker_image')
+        self.pushBuildProperty(properties, pr.description, 'docker_image[-:]' + re_builder, 'build_image')
+        self.pushBuildProperty(properties, pr.description, 'build_image[-:]' + re_builder, 'build_image')
 
         _processProperty('buildworker', 'buildworker')
 
