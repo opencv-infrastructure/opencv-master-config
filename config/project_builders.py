@@ -284,27 +284,40 @@ for branch in ['2.4', '3.4', 'master']:
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl'], platform=PLATFORM_SKYLAKE,
-                        useName='openvino', dockerImage='ubuntu-openvino:16.04')),
+                        useName='openvino', dockerImage='ubuntu-openvino:16.04',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1}
+                    )),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl', 'opencl'], platform=PLATFORM_SKYLAKE,
                         useName='openvino-opencl', dockerImage='ubuntu-openvino:16.04',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useOpenCL=True, testOpenCL=True)),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx'], platform=PLATFORM_SKYLAKE_X,
                         useName='openvino', dockerImage='ubuntu-openvino:16.04',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useSlave=['linux-3','linux-5'])),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skx', 'opencl'], platform=PLATFORM_SKYLAKE_X,
                         useName='openvino-opencl', dockerImage='ubuntu-openvino:16.04',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useSlave=['linux-3'], useOpenCL=True, testOpenCL=True)),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'mac'],
+                        osType=OSType.MACOSX, platform=PLATFORM_DEFAULT,
+                        useName='openvino', buildImage='openvino-2019r1',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
+                        useSlave=['macosx-1'])),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'halide', 'skl', 'opencl'],
                         useName='halide', dockerImage='halide:16.04',
                         useSlave=['linux-1','linux-2','linux-4'],
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useOpenCL=True, testOpenCL=True)
                 ),
                 SetOfBuilders(
