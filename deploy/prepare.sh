@@ -5,18 +5,21 @@ if [ -f /app/deploy/env.sh ]; then
 fi
 
 umask 0000
-virtualenv --system-site-packages /env
-. /env/bin/activate
-
 set -x
 
-pip install -U pip wheel setuptools
-pip install pyOpenSSL
+if [ ! -f /env/bin/activate ]; then
+  virtualenv --system-site-packages /env
+  . /env/bin/activate
+  pip install -U pip wheel setuptools
+  pip install pyOpenSSL
+  pip install sqlalchemy==0.7.10
+  pip install sqlalchemy-migrate==0.7.2
+else
+  . /env/bin/activate
+fi
 
 (
 cd /app/buildbot/master
-pip install sqlalchemy==0.7.10
-pip install sqlalchemy-migrate==0.7.2
 python setup.py develop
 )
 

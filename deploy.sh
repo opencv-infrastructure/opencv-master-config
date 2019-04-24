@@ -102,6 +102,9 @@ if [ -n "$HTTPS_PROXY" ]; then
   DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg HTTPS_PROXY=$HTTPS_PROXY"
   DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg https_proxy=$HTTPS_PROXY"
 fi
+. deploy/env.sh
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg APP_GID=$APP_GID"
+DOCKER_BUILD_ARGS="$DOCKER_BUILD_ARGS --build-arg APP_UID=$APP_UID"
 printf "%q " $DOCKER_BUILD_ARGS > .docker_build_options
 $DOCKER build $DOCKER_BUILD_ARGS -t ${IMAGE} deploy/${APP_ENV}
 

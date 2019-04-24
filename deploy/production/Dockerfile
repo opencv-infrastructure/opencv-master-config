@@ -23,3 +23,9 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 CMD ["/app/deploy/entry.sh"]
+
+ARG APP_GID
+ARG APP_UID
+
+COPY prepare.sh prepare_root.sh /tmp
+RUN APP_GID=$APP_GID APP_UID=$APP_UID /tmp/prepare_root.sh
