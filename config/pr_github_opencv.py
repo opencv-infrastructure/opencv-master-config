@@ -37,7 +37,6 @@ class GitHubContext(pullrequest.context.Context):
         windows=dict(name='Win64', builders=['precommit_windows64'], order=20),
         ocl=dict(name='Win64 OpenCL', builders=['precommit_opencl'], order=21),
         macosx=dict(name='Mac', builders=['precommit_macosx'], order=30),
-        oclmacosx=dict(name='Mac OpenCL', builders=['precommit_opencl_macosx'], order=31),
         android=dict(name='Android armeabi-v7a', builders=['precommit_android'], order=40),
         linuxNoOpt=dict(name='Linux x64 Debug', builders=['precommit_linux64_no_opt'], order=50),
         docs=dict(name='Docs', builders=['precommit_docs'], order=90),
@@ -46,18 +45,14 @@ class GitHubContext(pullrequest.context.Context):
         # Optional
         linux32=dict(name='Linux32', builders=['precommit_linux32'], order=1000),
         win32=dict(name='Win32', builders=['precommit_windows32'], order=1100),
-        windows_vc15=dict(name='Win64 MSVS2017', builders=['precommit_windows64-vc15'], order=1101),
-        ocl_vc15=dict(name='Win64 MSVS2017 OpenCL', builders=['precommit_opencl-vc15'], order=1102),
         armv7=dict(name='ARMv7', builders=['precommit_armv7'], order=1200),
         armv8=dict(name='ARMv8', builders=['precommit_armv8'], order=1300),
         android_pack=dict(name='Android pack', builders=['precommit_pack_android'], order=10040),
 
-        #linux_icc=dict(name='Linux x64 Intel Compiler', builders=['precommit_linux64-icc'], order=50010),
-        #windows_icc=dict(name='Win64 Intel Compiler', builders=['precommit_windows64-icc'], order=50020),
-
-        #cuda=dict(name='CUDA', builders=['precommit_cuda_linux64'], order=100000),
-
         custom=dict(name='Custom', builders=['precommit_custom_linux'], order=1000000),
+        #custom_lin=dict(name='Custom Lin', builders=['precommit_custom_linux'], order=1000010),
+        custom_win=dict(name='Custom Win', builders=['precommit_custom_windows'], order=1000011),
+        custom_mac=dict(name='Custom Mac', builders=['precommit_custom_mac'], order=1000012),
     )
 
     username = 'opencv'
@@ -208,7 +203,7 @@ class GitHubContext(pullrequest.context.Context):
         _processProperty('ci_branch', 'ci-branch')
 
         isWIP = self.isWIP(pr)
-        if isWIP or b.name in ['Custom', 'custom']:
+        if isWIP or b.name in ['Custom', 'custom', 'Custom Lin', 'Custom Win', 'Custom Mac']:
             _processPropertyWIP('test_module[s]?', 'modules_filter')
             _processPropertyWIP('test[s]?_filter[s]?', 'test_filter')
             _processPropertyWIP('build_examples', 'build_examples')
@@ -216,6 +211,8 @@ class GitHubContext(pullrequest.context.Context):
             _processPropertyWIP('CXXFLAGS_EXTRA', 'build_cxxflags_extra')
             _processPropertyWIP('CPU_BASELINE', 'build_cpu_baseline')
             _processPropertyWIP('CPU_DISPATCH', 'build_cpu_dispatch')
+            _processPropertyWIP('build_compiler', 'build_compiler')
+            _processPropertyWIP('build_platform', 'build_platform')
 
         self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata')
 

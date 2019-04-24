@@ -313,6 +313,13 @@ for branch in ['2.4', '3.4', 'master']:
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useSlave=['macosx-1'])),
                 SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        useName='openvino', buildImage='openvino-2019r1', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
+                        useSlave=['windows-1'])),
+                SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'halide', 'skl', 'opencl'],
                         useName='halide', dockerImage='halide:16.04',
@@ -378,6 +385,38 @@ for branch in ['2.4', '3.4', 'master']:
                         builder_properties={'modules_filter':'videoio,video,tracking'},
                         useSlave=['linux-1','linux-2','linux-4'],
                         useOpenCL=False, testOpenCL=False)),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        buildImage='msvs2017', is64=True, compiler=WinCompiler.VC15,
+                        useOpenCL=True, testOpenCL=True,
+                        useSlave=['windows-1']
+                    )),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        buildImage='msvs2017-win32', is64=False, compiler=WinCompiler.VC15,
+                        useOpenCL=True, testOpenCL=True,
+                        useSlave=['windows-1']
+                    )),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        buildImage='msvs2019', is64=True, compiler=WinCompiler.VC16,
+                        useOpenCL=True, testOpenCL=True,
+                        useSlave=['windows-1']
+                    )),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        buildImage='msvs2019-win32', is64=False, compiler=WinCompiler.VC16,
+                        useOpenCL=True, testOpenCL=True,
+                        useSlave=['windows-1']
+                    )),
             ] if branch != '2.4' else []) + ([
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
@@ -472,7 +511,7 @@ for branch in ['2.4', '3.4', 'master']:
                         factory_class=AndroidPackFactory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                          osType=OSType.ANDROID, is64=True, useName='pack-contrib',
-                                         useSlave=['linux-1','linux-2','linux-4']
+                                         useSlave=['linux-1','linux-2','linux-4'] if branch != 'master' else ['linux-4']
                         )
                     ),
                     SetOfBuilders(
@@ -624,13 +663,15 @@ addConfiguration(
                     cmake_parameters={'OPENCV_CXX11':'ON', 'CPU_BASELINE':'AVX2', 'CPU_DISPATCH':''},
                     useIPP=False,  # check OpenCV AVX2 code instead of IPP
                     builder_properties={'buildworker':'linux-1,linux-2'}),
-            LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt', useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False,
-                    builder_properties={'buildworker':'linux-3,linux-5'}),
-            WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15, cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'}),
+            LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt',
+                    useIPP=False, useSSE=False, useOpenCL=False, isDebug=True, buildWithContrib=False
+                    #builder_properties={'buildworker':'linux-3,linux-5'},
+            ),
+            #WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15, cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'}),
             WindowsPrecommit64(builderName='precommit_windows64'),
             #WindowsPrecommit64(builderName='precommit_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
             OCLPrecommit(builderName='precommit_opencl', cmake_parameters={'XWITH_TBB':'ON', 'XBUILD_TBB':'ON'}),
-            OCLPrecommit(builderName='precommit_opencl-vc15', compiler=WinCompiler.VC15),
+            #OCLPrecommit(builderName='precommit_opencl-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit32(builderName='precommit_windows32'),
             MacOSXPrecommit(builderName='precommit_macosx'),
             OCLMacPrecommit(builderName='precommit_opencl_macosx'),
@@ -644,7 +685,19 @@ addConfiguration(
             precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack'],
                     useSlave=['linux-1','linux-2','linux-4'],
                     builder_properties={'buildworker':'linux-4'}),
-            LinuxPrecommit(builderName='precommit_custom_linux', useIPP=None, dockerImage='is_not_set_but_required'),
+            precommit(platform(PLATFORM_ANY)(LinuxPrecommitFactory))(builderName='precommit_custom_linux',
+                    useIPP=None, buildImage='is_not_set_but_required'
+            ),
+            windows(precommitFactory)(builderName='precommit_custom_windows',
+                    compiler=WinCompiler.VC15,
+                    #cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'},
+                    useSlave=['windows-1', 'windows-2'],
+                    builder_properties={'buildworker': 'windows-1'}
+            ),
+            macosx(precommitFactory)(builderName='precommit_custom_mac',
+                    useSlave=['macosx-1', 'macosx-2'],
+                    builder_properties={'buildworker': 'macosx-1'}
+            ),
 
             contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64'),
             #contrib(LinuxPrecommit)(builderName='precommit-contrib_linux64-icc', dockerImage='ubuntu-icc:16.04'),

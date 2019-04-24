@@ -27,21 +27,32 @@ class WinCompiler:
     VC12 = 'vc12' # Visual Studio 2013
     VC14 = 'vc14' # Visual Studio 2015
     VC15 = 'vc15' # Visual Studio 2017
+    VC16 = 'vc16' # Visual Studio 2019
 
     @staticmethod
-    def getCMakeGenerator(compiler, is64):
+    def getCMakeOptions(compiler, platform, is64):
+        platform = platform if platform else ('x64' if is64 else 'Win32')
+        if platform == 'x86':
+            platform = 'Win32'
+
+        if compiler == WinCompiler.VC16:
+            return ('Visual Studio 16 2019', (None, platform))
+        elif compiler == WinCompiler.VC15:
+            return ('Visual Studio 15 2017', (None, platform))
+
+        if platform == 'x64':
+            platform = 'Win64'
+        platform = '' if platform == 'Win32' else (' ' + platform)
         cmake_generator = None
         if compiler == WinCompiler.VC10:
-            cmake_generator = 'Visual Studio 10 Win64' if is64 else 'Visual Studio 10'
+            cmake_generator = 'Visual Studio 10' + platform
         elif compiler == WinCompiler.VC11:
-            cmake_generator = 'Visual Studio 11 Win64' if is64 else 'Visual Studio 11'
+            cmake_generator = 'Visual Studio 11' + platform
         elif compiler == WinCompiler.VC12:
-            cmake_generator = 'Visual Studio 12 Win64' if is64 else 'Visual Studio 12'
+            cmake_generator = 'Visual Studio 12' + platform
         elif compiler == WinCompiler.VC14:
-            cmake_generator = 'Visual Studio 14 Win64' if is64 else 'Visual Studio 14'
-        elif compiler == WinCompiler.VC15:
-            cmake_generator = 'Visual Studio 15 Win64' if is64 else 'Visual Studio 15'
-        return cmake_generator
+            cmake_generator = 'Visual Studio 14' + platform
+        return (cmake_generator, None)
 
 def getDocPackScript(osType):
     # on worker

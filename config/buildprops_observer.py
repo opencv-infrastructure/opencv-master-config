@@ -19,7 +19,14 @@ class BuildPropertiesObserver(LogLineObserver):
             if name is not None:
                 if value is not None:
                     print("Set property: '%s'='%s'" % (name, value))
-                    self.target_build.setProperty('ci-' + name, json.loads(value), "Runtime property", runtime=True)
+                    try:
+                        v = json.loads(value)
+                    except ValueError:
+                        if not '"' in value:
+                            v = json.loads('"' + value + '"')
+                        else:
+                            raise
+                    self.target_build.setProperty('ci-' + name, v, "Runtime property", runtime=True)
                 else:
                     print("Reset property: '%s'" % (name))
                     self.target_build.setProperty('ci-' + name, None, "Runtime property", runtime=True)

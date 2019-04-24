@@ -177,9 +177,6 @@ class CommonFactory(BuilderNewStyle):
         elif self.isDebug:
             self.cmakepars['ENABLE_CCACHE'] = 'OFF'
 
-        if self.cmake_generator is None and self.osType == OSType.WINDOWS and self.compiler is not None:
-            self.cmake_generator = WinCompiler.getCMakeGenerator(self.compiler, self.is64)
-
 
     def onNewBuild(self):
         BuilderNewStyle.onNewBuild(self)
@@ -196,6 +193,10 @@ class CommonFactory(BuilderNewStyle):
 
         if self.getProperty('build_contrib', default=None):
             self.buildWithContrib = self.getProperty('build_contrib', default=None) in ['ON', '1', 'TRUE', 'True']
+
+        self.compiler = self.getProperty('build_compiler', default=self.compiler)
+        if self.getProperty('build_platform', default=None):
+            self.cmake_platform = (None, str(self.getProperty('build_platform', default=None)))
 
         if self.buildImage is None:
             if self.osType == OSType.LINUX:
@@ -217,8 +218,13 @@ class CommonFactory(BuilderNewStyle):
         if buildImage:
             self.buildImage = (None, buildImage)
         if self.buildImage:
-            buildImageName = self.buildImage[1] if isinstance(self.buildImage, (list, tuple)) else self.buildImage
-            self.env['BUILD_IMAGE']='opencv-'+str(re.sub(r'[^\w\-_0-9\:\.]', '', buildImageName))
+            buildImageName = str(self.buildImage[1] if isinstance(self.buildImage, (list, tuple)) else self.buildImage)
+            buildImageName = re.sub(r'[^\w\-_0-9\:\.]|\.\.', '', buildImageName)
+            assert len(buildImageName) > 0
+            assert buildImageName.find('..') == -1, buildImageName
+            assert buildImageName.find('/') == -1, buildImageName
+            assert buildImageName.find('\\') == -1, buildImageName
+            self.env['BUILD_IMAGE']='opencv-' + buildImageName
 
         if self.osType == OSType.ANDROID and self.suppressions is None:
             self.suppressions = [[None, re.compile(r'\[apkbuilder\]'), None, None]]  # warning: "The JKS keystore uses a proprietary format"
@@ -238,6 +244,38 @@ class CommonFactory(BuilderNewStyle):
         disable_ipp_prop = self.getProperty('disable_ipp', default=None)
         if disable_ipp_prop in ['ON', '1', 'TRUE', 'True']:
             self.env['OPENCV_IPP'] = 'disabled'
+
+
+    def initializePostProcess(self):
+        platform = self.cmake_platform[1] if self.cmake_platform else None
+
+        ci_build_arch_prop = self.getProperty('ci-build_arch', default=None)
+        if ci_build_arch_prop:
+            if 'BUILD_ARCH' in self.env:
+                del self.env['BUILD_ARCH']
+            self.cmake_platform = None
+            platform = str(ci_build_arch_prop)
+        ci_build_compiler_prop = self.getProperty('ci-build_compiler', default=None)
+        if ci_build_compiler_prop:
+            self.compiler = str(ci_build_compiler_prop)
+
+        if self.osType == OSType.WINDOWS and self.compiler is not None:
+            cmake_options = WinCompiler.getCMakeOptions(self.compiler, platform, self.is64)
+            if self.cmake_generator is None and cmake_options[0]:
+                self.cmake_generator = cmake_options[0]
+            if self.cmake_platform is None and cmake_options[1]:
+                self.cmake_platform = cmake_options[1]
+
+        if self.osType != OSType.ANDROID:
+            if not 'BUILD_ARCH' in self.env:
+                if self.cmake_platform:
+                    self.env['BUILD_ARCH'] = self.cmake_platform[1]
+                elif platform:
+                    self.env['BUILD_ARCH'] = platform
+                elif self.is64 is not None:
+                    self.env['BUILD_ARCH'] = 'x64' if self.is64 else 'x86'
+            if (not 'BUILD_COMPILER' in self.env) and (self.compiler is not None):
+                self.env['BUILD_COMPILER'] = self.compiler
 
 
     def getTags(self):
@@ -427,15 +465,6 @@ class CommonFactory(BuilderNewStyle):
             self.envCmdList = [self.envCmd]
             self.envCmd += ' '
 
-        if self.osType != OSType.ANDROID:
-            if (not 'BUILD_ARCH' in self.env) and (self.is64 is not None):
-                if self.is64:
-                    self.env['BUILD_ARCH'] = 'x64'
-                else:
-                    self.env['BUILD_ARCH'] = 'x86'
-            if (not 'BUILD_COMPILER' in self.env) and (self.compiler is not None):
-                self.env['BUILD_COMPILER'] = self.compiler
-
 
     @defer.inlineCallbacks
     def initialize(self):
@@ -464,6 +493,7 @@ class CommonFactory(BuilderNewStyle):
                 haltOnFailure=True)
         step.addLogObserver('stdio', BuildPropertiesObserver(self))
         yield self.processStep(step)
+        self.initializePostProcess()
 
 
     @defer.inlineCallbacks
