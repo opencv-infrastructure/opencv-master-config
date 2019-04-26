@@ -10,7 +10,7 @@ from constants import trace, PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, P
 import buildbot_passwords
 from buildbot.buildslave import BuildSlave
 
-INTEL_COMPILER_TOOLSET_CURRENT=('-icc17', '"Intel C++ Compiler 17.0"')
+INTEL_COMPILER_TOOLSET_CURRENT=('-icc17', 'Intel C++ Compiler 17.0')
 INTEL_COMPILER_DOCKER_CURRENT=('-icc17', 'ubuntu-icc:16.04')
 
 workers = []

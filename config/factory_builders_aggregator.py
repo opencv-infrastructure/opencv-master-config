@@ -83,8 +83,12 @@ class SetOfBuilders(object):
         builder_descriptors = self.GetListOfBuilders()
         for builder in builder_descriptors:
             trace("Register builder: name=%s, slavenames=%s" % (builder.getName(), builder.getSlaves()))
-            builders.append(builder.register())
-            builderNames.append(builder.getName())
+            try:
+                builders.append(builder.register())
+                builderNames.append(builder.getName())
+            except:
+                trace("Can't register builder: %s" % repr(builder))
+                raise
 
         self.builders = builders
         self.builderNames = builderNames

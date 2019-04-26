@@ -81,6 +81,22 @@ class CommonFactory(BuilderNewStyle):
 
     plainRunName = ''
 
+    def __repr__(self):
+        d = self.__dict__
+        name = '?'
+        try:
+            name = self.getName()
+        except:
+            pass
+        return 'Builder: ' + name + \
+            ' branch=' + str(d.get('branch', '?')) + \
+            ' useName=' + str(d.get('useName', '?')) + \
+            ' osType=' + str(d.get('osType', '?')) + \
+            ' compiler=' + str(d.get('compiler', '?')) + \
+            ' is64=' + str(d.get('is64', '?')) + \
+            ' buildShared=' + str(d.get('buildShared', '?')) + \
+            ''
+
     def __init__(self, **kwargs):
         self.forceSched = kwargs.pop('forceSched', {})
 
@@ -96,7 +112,7 @@ class CommonFactory(BuilderNewStyle):
         self.androidABI = kwargs.pop('androidABI', None)
         assert self.androidABI is None or self.osType == OSType.ANDROID
         self.androidDevice = kwargs.pop('androidDevice', None)
-        self.compiler = kwargs.pop('compiler', None)
+        self.compiler = kwargs.pop('compiler', WinCompiler.VC14 if self.osType == OSType.WINDOWS else None)
         self.is64 = kwargs.pop('is64', True if self.osType in [OSType.WINDOWS, OSType.LINUX] else None)
         self.buildShared = kwargs.pop('buildShared', True)
         assert not (self.buildShared is None)
@@ -120,6 +136,7 @@ class CommonFactory(BuilderNewStyle):
         assert type(self.env) is dict
         self.cmake_generator = kwargs.pop('cmake_generator', None)
         self.cmake_toolset = kwargs.pop('cmake_toolset', None) # (builder suffix, toolset value)
+        self.cmake_platform = kwargs.pop('cmake_platform', None) # (builder suffix, toolset value)
         self.cmakepars = kwargs.pop('cmake_parameters', {})
         self.r_warning_pattern = re.compile(r'.*warning[: ].*', re.I | re.S)
         self.suppressions = None
@@ -159,6 +176,9 @@ class CommonFactory(BuilderNewStyle):
             self.env['BUILD_PRECOMMIT'] = '1'
         elif self.isDebug:
             self.cmakepars['ENABLE_CCACHE'] = 'OFF'
+
+        if self.cmake_generator is None and self.osType == OSType.WINDOWS and self.compiler is not None:
+            self.cmake_generator = WinCompiler.getCMakeGenerator(self.compiler, self.is64)
 
 
     def onNewBuild(self):
@@ -262,11 +282,13 @@ class CommonFactory(BuilderNewStyle):
         else:
             run_py = [f]
             if self.isDebug:
-                run_py.append(' --configuration="Debug"')
+                run_py.append('--configuration="Debug"')
+                if isNotBranch24(self):
+                    run_py.append('--test_tag_skip=size_hd')
             if self.androidABI:
-                run_py.append(' --android_propagate_opencv_env --android_test_data_path /data/local/tmp/opencv/testdata/')
+                run_py += ['--android_propagate_opencv_env', '--android_test_data_path /data/local/tmp/opencv/testdata/']
                 if self.androidDevice:
-                    run_py.append(' --serial %s' % self.androidDevice)
+                    run_py += ['--serial', self.androidDevice]
             return run_py
 
     def getTestBlacklist(self, isPerf=False):
@@ -406,10 +428,6 @@ class CommonFactory(BuilderNewStyle):
             self.envCmd += ' '
 
         if self.osType != OSType.ANDROID:
-            if self.compiler is None:
-                if self.osType == OSType.WINDOWS:
-                    self.compiler = WinCompiler.VC14
-
             if (not 'BUILD_ARCH' in self.env) and (self.is64 is not None):
                 if self.is64:
                     self.env['BUILD_ARCH'] = 'x64'
@@ -418,8 +436,6 @@ class CommonFactory(BuilderNewStyle):
             if (not 'BUILD_COMPILER' in self.env) and (self.compiler is not None):
                 self.env['BUILD_COMPILER'] = self.compiler
 
-            if self.osType == OSType.WINDOWS and self.cmake_generator is None:
-                self.cmake_generator = WinCompiler.getCMakeGenerator(self.compiler, self.is64)
 
     @defer.inlineCallbacks
     def initialize(self):
@@ -597,15 +613,18 @@ class CommonFactory(BuilderNewStyle):
             for key, value in cmakepars_dict.items():
                 value = yield interpolateParameter(value, props)
                 cmakepars[key] = value
-            cmakepars = ' '.join(['-D%s=%s' % (key, value) \
-                for key, value in cmakepars.items() if value is not None])
+            cmakepars = ['-D%s=%s' % (key, value) \
+                for key, value in cmakepars.items() if value is not None]
 
-            command = self.envCmd + 'cmake'
+            command = self.envCmdList + ['cmake']
             if self.cmake_generator:
-                command += ' -G%s' % self.cmake_generator
+                command += ['-G', self.cmake_generator]
             if self.cmake_toolset:
-                command += ' -T%s' % self.cmake_toolset[1]
-            command += ' %s %s' % (cmakepars, cmakedir)
+                command += ['-T', self.cmake_toolset[1]]
+            if self.cmake_platform:
+                command += ['-A', self.cmake_platform[1]]
+            command += cmakepars
+            command += [cmakedir]
             defer.returnValue(command)
 
         step = Compile(command=cmake_command, env=self.env,
@@ -622,19 +641,19 @@ class CommonFactory(BuilderNewStyle):
                 runParallel=True, **kwargs):
         @renderer
         def compileCommand(props):
-            command = '%s cmake --build . --config %s' % (self.envCmd, config)
+            command = self.envCmdList + ['cmake', '--build', '.', '--config', config]
             if not target is None:
-                command += ' --target %s' % target
+                command += ['--target', target]
             if useClean:
-                command += ' --clean-first'
+                command += ['--clean-first']
             if runParallel:
                 cpus = props.getProperty('CPUs')
                 if not cpus:
                     cpus = 1
-                if self.compiler and self.compiler.startswith('vc'):
-                    command += ' -- /maxcpucount:%s /consoleloggerparameters:NoSummary' % cpus
+                if self.osType == OSType.WINDOWS or (self.compiler and self.compiler.startswith('vc')):
+                    command += ['--', '/maxcpucount:%s' % cpus, '/consoleloggerparameters:NoSummary']
                 else:
-                    command += ' -- -j%s' % cpus
+                    command += ['--', '-j%s' % cpus]
             return command
 
         if desc is None:

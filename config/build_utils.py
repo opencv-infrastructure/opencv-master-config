@@ -32,15 +32,15 @@ class WinCompiler:
     def getCMakeGenerator(compiler, is64):
         cmake_generator = None
         if compiler == WinCompiler.VC10:
-            cmake_generator = '"Visual Studio 10 Win64"' if is64 else '"Visual Studio 10"'
+            cmake_generator = 'Visual Studio 10 Win64' if is64 else 'Visual Studio 10'
         elif compiler == WinCompiler.VC11:
-            cmake_generator = '"Visual Studio 11 Win64"' if is64 else '"Visual Studio 11"'
+            cmake_generator = 'Visual Studio 11 Win64' if is64 else 'Visual Studio 11'
         elif compiler == WinCompiler.VC12:
-            cmake_generator = '"Visual Studio 12 Win64"' if is64 else '"Visual Studio 12"'
+            cmake_generator = 'Visual Studio 12 Win64' if is64 else 'Visual Studio 12'
         elif compiler == WinCompiler.VC14:
-            cmake_generator = '"Visual Studio 14 Win64"' if is64 else '"Visual Studio 14"'
+            cmake_generator = 'Visual Studio 14 Win64' if is64 else 'Visual Studio 14'
         elif compiler == WinCompiler.VC15:
-            cmake_generator = '"Visual Studio 15 Win64"' if is64 else '"Visual Studio 15"'
+            cmake_generator = 'Visual Studio 15 Win64' if is64 else 'Visual Studio 15'
         return cmake_generator
 
 def getDocPackScript(osType):
