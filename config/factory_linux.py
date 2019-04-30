@@ -95,6 +95,8 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN2cv7MatExprC.*" + \
             "|_ZN2cv4gapi7combineERKNS0_14GKernelPackageES3_NS_12unite_policyE" + \
             "|_ZNK2cv4gapi14GKernelPackage6lookupERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt6vectorINS0_8GBackendESaISB_EE" + \
+            "|_ZN2cv12GIOProtoArgsINS_6In_TagEEC.*" + \
+            "|_ZN2cv12GIOProtoArgsINS_7Out_TagEEC.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
