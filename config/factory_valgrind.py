@@ -7,7 +7,7 @@ class ValgrindFactory(ParentClass):
     def __init__(self, **kwargs):
         useSlave = ['linux-2']
         cmake_parameters = kwargs.pop('cmake_parameters', {})
-        cmake_parameters['CMAKE_CXX_FLAGS'] = '"-g -O1"'
+        cmake_parameters['CMAKE_CXX_FLAGS'] = '-g -O1'
         cmake_parameters['CPU_DISPATCH'] = ''
         cmake_parameters['CPU_BASELINE'] = 'AVX'
         cmake_parameters['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'

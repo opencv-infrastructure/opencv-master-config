@@ -282,7 +282,7 @@ class CommonFactory(BuilderNewStyle):
         else:
             run_py = [f]
             if self.isDebug:
-                run_py.append('--configuration="Debug"')
+                run_py.append('--configuration=Debug')
                 if isNotBranch24(self):
                     run_py.append('--test_tag_skip=size_hd')
             if self.androidABI:
@@ -573,15 +573,15 @@ class CommonFactory(BuilderNewStyle):
             self.cmakepars['BUILD_opencv_world'] = 'ON' if self.getProperty('build_world', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
 
         if self.getProperty('build_cxxflags', default=None):
-            self.cmakepars['CMAKE_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags', default='')
+            self.cmakepars['CMAKE_CXX_FLAGS'] = '%s' % self.getProperty('build_cxxflags', default='')
 
         if self.getProperty('build_cpu_baseline', default=None) is not None:
-            self.cmakepars['CPU_BASELINE'] = '"%s"' % self.getProperty('build_cpu_baseline', default='')
+            self.cmakepars['CPU_BASELINE'] = '%s' % self.getProperty('build_cpu_baseline', default='')
         if self.getProperty('build_cpu_dispatch', default=None) is not None:
-            self.cmakepars['CPU_DISPATCH'] = '"%s"' % self.getProperty('build_cpu_dispatch', default='')
+            self.cmakepars['CPU_DISPATCH'] = '%s' % self.getProperty('build_cpu_dispatch', default='')
 
         if self.getProperty('build_cxxflags_extra', default=None):
-            self.cmakepars['OPENCV_EXTRA_CXX_FLAGS'] = '"%s"' % self.getProperty('build_cxxflags_extra', default='')
+            self.cmakepars['OPENCV_EXTRA_CXX_FLAGS'] = '%s' % self.getProperty('build_cxxflags_extra', default='')
 
         if self.getProperty('build_tbb', default=None):
             self.cmakepars['BUILD_TBB'] = 'ON' if self.getProperty('build_tbb', default=None) in ['ON', '1', 'TRUE', 'True'] else 'OFF'
