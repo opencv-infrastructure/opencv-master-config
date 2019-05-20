@@ -92,9 +92,12 @@ class GitHubContext(pr_github_opencv.GitHubContext):
         if main_branch_name_parameter:
             main_branch_name = main_branch_name_parameter[1]
 
-        if not self.isBadBranch(pr):
-            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
-                    (yield self.readOtherPR(pr, 'opencv', main_branch_name, 'main'))):
+        if not self.isBadBranch(pr) or extra_branch_name_parameter:
+            if not (yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')):
+                defer.returnValue(False)
+
+        if not self.isBadBranch(pr) or main_branch_name_parameter:
+            if not (yield self.readOtherPR(pr, 'opencv', main_branch_name, 'main')):
                 defer.returnValue(False)
 
         properties.setProperty('branch', pr.branch, 'Pull request')

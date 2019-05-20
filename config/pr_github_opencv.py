@@ -261,9 +261,12 @@ class GitHubContext(pullrequest.context.Context):
         if contrib_branch_name_parameter:
             contrib_branch_name = contrib_branch_name_parameter[1]
 
-        if not self.isBadBranch(pr):
-            if not ((yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')) and
-                    (yield self.readOtherPR(pr, 'opencv_contrib', contrib_branch_name, 'contrib'))):
+        if not self.isBadBranch(pr) or extra_branch_name_parameter:
+            if not (yield self.readOtherPR(pr, 'opencv_extra', extra_branch_name, 'extra')):
+                defer.returnValue(False)
+
+        if not self.isBadBranch(pr) or contrib_branch_name_parameter:
+            if not (yield self.readOtherPR(pr, 'opencv_contrib', contrib_branch_name, 'contrib')):
                 defer.returnValue(False)
 
         try:
