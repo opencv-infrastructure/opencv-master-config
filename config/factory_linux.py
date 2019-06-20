@@ -99,6 +99,7 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN2cv12GIOProtoArgsINS_7Out_TagEEC.*" + \
             "|_ZN2cv12GComputation5applyERKSt6vectorINS_3MatESaIS2_EES6_OS1_INS_11GCompileArgESaIS7_EE" + \
             "|_ZN2cv4gapi5LUT3DERKNS_4GMatERKNS_4GMatEi" + \
+            "|_ZN2cv3dnn9CropLayer.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
