@@ -420,6 +420,15 @@ for branch in ['2.4', '3.4', 'master']:
             ] if branch != '2.4' else []) + ([
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'vulkan'],
+                        useName='vulkan', dockerImage='ubuntu-vulkan:16.04',
+                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
+                        useSlave=['linux-4'], useOpenCL=True, testOpenCL=True,
+                    )
+                ),
+            ] if branch == 'master' else []) + ([
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda',
                     dockerImage='ubuntu-cuda:16.04', useSlave=['linux-1','linux-2','linux-4'])),
             ] if branch == '3.4' else [])
