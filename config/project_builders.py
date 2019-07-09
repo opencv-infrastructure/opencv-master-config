@@ -317,7 +317,11 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows'],
                         osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
                         useName='openvino', buildImage='openvino-2019r1', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
-                        builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
+                        builder_properties={
+                            'modules_filter':'dnn,python2,python3,java',
+                            'parallel_tests': 1,
+                            'test_maxtime': 2*60*60,
+                        },
                         useSlave=['windows-1'])),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
