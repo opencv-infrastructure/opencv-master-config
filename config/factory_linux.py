@@ -101,6 +101,7 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN2cv4gapi5LUT3DERKNS_4GMatERKNS_4GMatEi" + \
             "|_ZN2cv3dnn9CropLayer.*" + \
             "|.*8descr_of.*" + \
+            "|_ZN2cv4gapi3wip.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
