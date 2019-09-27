@@ -278,6 +278,11 @@ for branch in ['2.4', '3.4', 'master']:
                 ),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'mips'], useName='mips-msa', dockerImage='mips64el',
+                                     useSlave=['linux-1'])
+                ),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript',
                                      useSlave=['linux-1','linux-2','linux-4'])
                 ),
@@ -314,7 +319,7 @@ for branch in ['2.4', '3.4', 'master']:
                         useSlave=['macosx-1'])),
                 SetOfBuilders(
                     factory_class=OpenCVBuildFactory,
-                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows'],
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows', 'opencl'],
                         osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
                         useName='openvino', buildImage='openvino-2019r2.0', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
                         builder_properties={
