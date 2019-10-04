@@ -319,9 +319,19 @@ for branch in ['2.4', '3.4', 'master']:
                         useSlave=['macosx-1'])),
                 SetOfBuilders(
                     factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        useName='openvino', buildImage='openvino-2019r2.0', is64=True, compiler=None, useOpenCL=True, testOpenCL=False,
+                        builder_properties={
+                            'modules_filter':'dnn,python2,python3,java',
+                            'parallel_tests': 1
+                        },
+                        useSlave=['windows-1'])),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows', 'opencl'],
                         osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
-                        useName='openvino', buildImage='openvino-2019r2.0', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
+                        useName='openvino-opencl', buildImage='openvino-2019r2.0', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
                         builder_properties={
                             'modules_filter':'dnn,python2,python3,java',
                             'parallel_tests': 1,
