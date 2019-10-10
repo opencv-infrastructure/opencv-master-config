@@ -37,17 +37,17 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             if isBranch34(builder):
-                print 'ABI: fallback to 3.4.7'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.7.abi.tar.gz'}
+                print 'ABI: fallback to 3.4.8'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.8.abi.tar.gz'}
             else:
-                print 'ABI: fallback to 4.1.1'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-4.1.1.abi.tar.gz'}
+                print 'ABI: fallback to 4.1.2'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.1.2.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.4.4' if isBranch34(self.build) else '4.0.0')
+        verString = self.getProperty('commit-description', '3.4.8' if isBranch34(self.build) else '4.1.2')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
