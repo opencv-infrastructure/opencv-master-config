@@ -101,7 +101,13 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN2cv4gapi5LUT3DERKNS_4GMatERKNS_4GMatEi" + \
             "|_ZN2cv3dnn9CropLayer.*" + \
             "|.*8descr_of.*" + \
-            "|_ZN2cv4gapi3wip.*" + \
+            "|.*4gapi3wip.*" + \
+            "|_ZN2cv4gapi3ocv7kernelsEv" + \
+            "|_ZN2cv9GCompiledclEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EE" + \
+            "|_ZN2cv12GComputation5applyEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EEOS1_INS_11GCompileArgESaISR_EE" + \
+            "|.*detail.*BasicVectorRef.*" + \
+            "|.*detail.*tracked_cv_umat.*" + "|.*ocl_get_out.*GMat.*" + \
+            "|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
