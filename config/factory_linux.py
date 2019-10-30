@@ -111,6 +111,7 @@ class AbiCompareCommand(ShellCommand):
             "|.*detail.*tracked_cv_umat.*" + "|.*ocl_get_out.*GMat.*" + \
             "|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
             "|.*2cv5instr.*" + \
+            "|.*12GFluidKernel.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
