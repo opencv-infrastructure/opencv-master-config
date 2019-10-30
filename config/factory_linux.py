@@ -82,7 +82,9 @@ class AbiCompareCommand(ShellCommand):
                 "|.*2cv10AutoBuffer.*" + \
                 "|_ZN2cv7MomentsC.*" + \
                 "|.*Durand.*" + \
-                "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*"
+                "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*" + \
+                "|.*2cv16TLSDataContainer.*" + \
+                ""
         ] if isBranch34(builder) else [
             "-skip-internal",
             "_ZN2cv11GGPUContext.*|" + \
@@ -108,6 +110,7 @@ class AbiCompareCommand(ShellCommand):
             "|.*detail.*BasicVectorRef.*" + \
             "|.*detail.*tracked_cv_umat.*" + "|.*ocl_get_out.*GMat.*" + \
             "|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
+            "|.*2cv5instr.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
