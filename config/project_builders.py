@@ -238,7 +238,7 @@ for branch in ['2.4', '3.4', 'master']:
                 SetOfBuilders(
                     factory_class=factory_docs.Docs_factory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'docs'], platform=PLATFORM_DEFAULT,
-                                     useSlave=['linux-1','linux-2','linux-4'],
+                                     useSlave=['linux-1','linux-2','linux-4'] if branch != '2.4' else ['linux-1'],
                                      osType=OSType.LINUX)
                 ),
             ] + ([
