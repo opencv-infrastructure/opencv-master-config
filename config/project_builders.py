@@ -288,6 +288,11 @@ for branch in ['2.4', '3.4', 'master']:
                 ),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-simd-emscripten', dockerImage='javascript-simd',
+                                     useSlave=['linux-1','linux-2','linux-4'])
+                ),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl'], platform=PLATFORM_SKYLAKE,
                         useName='openvino', dockerImage='ubuntu-openvino-2019r3.0:16.04',
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1}
