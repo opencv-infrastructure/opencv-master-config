@@ -84,6 +84,7 @@ class AbiCompareCommand(ShellCommand):
                 "|.*Durand.*" + \
                 "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*" + \
                 "|.*2cv16TLSDataContainer.*" + \
+                "|_ZN9_IplImageaSERKS_" + \
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal",
@@ -112,6 +113,7 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
             "|.*2cv5instr.*" + \
             "|.*12GFluidKernel.*" + \
+            "|_ZN9_IplImageaSERKS_" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
