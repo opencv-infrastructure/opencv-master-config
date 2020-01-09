@@ -105,6 +105,10 @@ class WinPackBuild(BaseFactory):
             yield self.cmake(desc='cmake_py37', builddir='build/python_37', cmakedir=py_dir, cmakepars=py_cmakepars)
             yield self.compile(builddir='build/python_37', config='release', target='install', useClean=False)
 
+            self.env['BUILD_PYTHON3'] = '38'
+            yield self.cmake(desc='cmake_py38', builddir='build/python_38', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_38', config='release', target='install', useClean=False)
+
             del self.env['BUILD_PYTHON3']
             yield self.cmake(desc='cmake_py27', builddir='build/python_27', cmakedir=py_dir, cmakepars=py_cmakepars)
             yield self.compile(builddir='build/python_27', config='release', target='install', useClean=False)
