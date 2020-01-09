@@ -110,7 +110,6 @@ class SetOfBuildersWithSchedulers():
         self.dayOfWeek = kwargs.pop('dayOfWeek', "*")
         self.builders = kwargs.pop('builders', None)
         assert self.builders
-        assert not((not self.genNightly is True) and (not self.nightlyHour is None or not self.nightlyMinute is None))
         assert self.branch or self.genTrigger
 
 

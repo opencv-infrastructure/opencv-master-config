@@ -206,14 +206,16 @@ def addConfiguration(descriptor):
 
 # Nightly builders
 for branch in ['2.4', '3.4', 'master']:
+    genNightly = True
     nightlyMinute = 0
     if branch == '3.4':
         nightlyMinute = 5
     if branch == '2.4':
         nightlyMinute = 10
+        genNightly = False
     addConfiguration(
         SetOfBuildersWithSchedulers(branch=branch, nameprefix='check-',
-            genForce=True, genNightly=True, nightlyHour=23, nightlyMinute=nightlyMinute,
+            genForce=True, genNightly=genNightly, nightlyHour=23, nightlyMinute=nightlyMinute,
             builders=[
                 SetOfBuilders(
                     factory_class=OpenCVBuildFactory,
@@ -461,7 +463,7 @@ for branch in ['2.4', '3.4', 'master']:
     addConfiguration(
         SetOfBuildersWithSchedulers(
             branch=branch, nameprefix='weekly-',
-            genForce=True, genNightly=True, nightlyHour=5, nightlyMinute=nightlyMinute, dayOfWeek=5,
+            genForce=True, genNightly=genNightly, nightlyHour=5, nightlyMinute=nightlyMinute, dayOfWeek=5,
             builders=([
                 SetOfBuilders(
                     factory_class=iOSFactory,
@@ -517,7 +519,7 @@ for branch in ['2.4', '3.4', 'master']:
     if branch != '2.4':
         addConfiguration(
             SetOfBuildersWithSchedulers(branch=branch, nameprefix='checkcontrib-',
-                genForce=True, genNightly=True, nightlyHour=23, nightlyMinute=20 + nightlyMinute,
+                genForce=True, genNightly=genNightly, nightlyHour=23, nightlyMinute=20 + nightlyMinute,
                 builders=[
                     # OpenCV Contrib
                     SetOfBuilders(
@@ -607,7 +609,7 @@ for branch in ['2.4', '3.4', 'master']:
     )
     addConfiguration(
         SetOfBuildersWithSchedulers(nameprefix='winpack-', branch=branch,
-            genForce=True, genNightly=True, nightlyHour=3 if branch == '2.4' else 0, nightlyMinute=nightlyMinute, dayOfWeek = 6 if branch == '2.4' else '*',
+            genForce=True, genNightly=genNightly, nightlyHour=3 if branch == '2.4' else 0, nightlyMinute=nightlyMinute, dayOfWeek = 6 if branch == '2.4' else '*',
             builders=SetOfBuilders(
                 factory_class=WinPackController,
                 init_params=dict(
