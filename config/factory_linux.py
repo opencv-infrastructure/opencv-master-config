@@ -114,6 +114,17 @@ class AbiCompareCommand(ShellCommand):
             "|.*2cv5instr.*" + \
             "|.*12GFluidKernel.*" + \
             "|_ZN9_IplImageaSERKS_" + \
+            "|_ZN16CvNArrayIteratorC.*" + \
+            "|_ZN2cv7MomentsC.*" + \
+            "|_ZN2cv7MomentsD.*" + \
+            "|_ZN7CvChain.*" + \
+            "|_ZN15CvChainPtReader.*" + \
+            "|_ZN15CvConnectedComp.*" + \
+            "|_ZN9CvContour.*" + \
+            "|_ZN11CvHistogram.*" + \
+            "|_ZN12CvPoint.*" + \
+            "|_ZN11CvSize.*" + \
+            "|.*anon-union-types.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
