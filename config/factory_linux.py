@@ -174,6 +174,8 @@ class LinuxPrecommitFactory(BaseFactory):
         BaseFactory.set_cmake_parameters(self)
         if isNotBranch24(self):
             self.cmakepars['GENERATE_ABI_DESCRIPTOR'] = 'ON'
+            if not isBranch34(self):
+                self.cmakepars['OPENCV_ABI_SKIP_MODULES_LIST'] = 'gapi'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = self.installPath
 
 
