@@ -512,6 +512,22 @@ for branch in ['2.4', '3.4', 'master']:
                                      useSlave=['linux-1']
                     )
                 ),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(
+                        branch=branch, buildWithContrib=False, tags=['weekly', 'etc'],
+                        useName='etc-simd-emulator', buildImage='simd-emulator',
+                        useSlave=['linux-1']
+                    )
+                ),
+                SetOfBuilders(
+                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                    init_params=dict(
+                        branch=branch, isContrib=True, tags=['weekly', 'etc', 'contrib'],
+                        useName='etc-simd-emulator', buildImage='simd-emulator',
+                        useSlave=['linux-1']
+                    )
+                ),
             ] if branch != '2.4' else [])
         )
     )
