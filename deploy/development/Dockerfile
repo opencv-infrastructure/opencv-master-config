@@ -22,7 +22,10 @@ RUN \
   apt-get install -y \
     npm node && \
   rm -rf /var/lib/apt/lists/* && \
-  [ -x /usr/bin/nodejs ] && ln -s /usr/bin/nodejs /usr/bin/node && \
+  [ -x /usr/bin/nodejs ] && ln -s /usr/bin/nodejs /usr/bin/node
+
+RUN \
+  npm config set registry="http://registry.npmjs.org/" && \
   npm install -g bower grunt-cli
 
 RUN \

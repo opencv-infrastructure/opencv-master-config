@@ -12,4 +12,5 @@ config/master.cfg.sample
 config/public_html/default.css.new
 config/public_html/robots.txt.new
 config/devices.py
+deploy_env.sh
 scripts/docs_upload.sh

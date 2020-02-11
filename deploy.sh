@@ -7,7 +7,7 @@ APP_ENV=${APP_ENV:-production}
 IMAGE=${IMAGE:-buildbot_image}
 CONTAINER=${CONTAINER:-buildbot}
 
-if [ ! -f ./deploy_env.sh ]; then
+if [ -f ./deploy_env.sh ]; then
   . ./deploy_env.sh
 fi
 
