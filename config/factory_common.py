@@ -905,8 +905,8 @@ class CommonFactory(BuilderNewStyle):
             res = main
         else:
             all = self.getProperty(prop).split()
-            res = [i for i in all if i not in main]
-        if not self.runPython or self.isContrib:
+            res = [i for i in all if i not in main or i in ['java', 'python', 'python2', 'python3']]  # run bindings tests for contrib too
+        if not self.runPython:
             res = [i for i in res if not isPythonTest(i)]
         modulesFilter = self.getProperty('modules_filter')
         if modulesFilter:
