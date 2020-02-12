@@ -16,6 +16,7 @@ class ValgrindFactory(ParentClass):
         kwargs['cmake_parameters'] = cmake_parameters
         kwargs['useSlave'] = kwargs.pop('useSlave', useSlave)
         kwargs['dockerImage'] = kwargs.pop('dockerImage', (None, 'valgrind'))
+        kwargs['testXML'] = True
         # changes builder name: kwargs['useIPP'] = False
         ParentClass.__init__(self, **kwargs)
 

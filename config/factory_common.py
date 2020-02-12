@@ -126,6 +126,7 @@ class CommonFactory(BuilderNewStyle):
         self.isDebug = kwargs.pop('isDebug', False)
         self.runPython = kwargs.pop('runPython', self.osType != OSType.ANDROID and not (self.isDebug and self.osType == OSType.WINDOWS))
         self.runTests = kwargs.pop('runTests', True)
+        self.testXML = kwargs.pop('testXML', False)
         self.runTestsBigData = kwargs.pop('runTestsBigData', False)
         self.isPrecommit = kwargs.pop('isPrecommit', False)
         self.isPerf = kwargs.pop('isPerf', False)
@@ -833,17 +834,20 @@ class CommonFactory(BuilderNewStyle):
                     warnOnWarnings=True, maxTime=self.getTestMaxTime(isPerf), timeout=self.getTestTimeout(),
                     doStepIf=doStepIf, hideStepIf=hideStepIfDefault, logfiles={})
             if not self.isPrecommit or self.isPerf:
-                args['logfiles'] = { getResultFileNameRenderer(testPrefix, test, testSuffix) : resultsFileOnSlave }
+                if bool(self.getProperty('test_xml', default=self.testXML)):
+                    args['logfiles'].update(
+                            { getResultFileNameRenderer(testPrefix, test, testSuffix) : resultsFileOnSlave }
+                    )
             if isPythonTest(test):
                 step = CommandTestPy(**args)
             elif test == 'java':
                 if isBranch24(self):
-                    args['logfiles'] = {"junit-report": "modules/java/test/.build/testResults/junit-noframes.html"}
+                    args['logfiles'].update({"junit-report": "modules/java/test/.build/testResults/junit-noframes.html"})
                 else:
-                    args['logfiles'] = {
+                    args['logfiles'].update({
                         "junit-report": "modules/java/pure_test/.build/testResults/junit-noframes.html",
                         "junit": "java_test/testResults/junit-noframes.html",  # since Jan 2018
-                    }
+                    })
                     args['lazylogfiles'] = True
                 step = CommandTestJava(**args)
             else:
