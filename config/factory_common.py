@@ -99,6 +99,8 @@ class CommonFactory(BuilderNewStyle):
 
     def __init__(self, **kwargs):
         self.forceSched = kwargs.pop('forceSched', {})
+        self.schedulerNightly = kwargs.pop('schedulerNightly', None)  # override settings
+
 
         if not hasattr(self, 'useName'):
             self.useName = kwargs.pop('useName', None)

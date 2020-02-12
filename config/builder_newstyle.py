@@ -174,8 +174,9 @@ class BuilderNewStyle(object, PropertiesMixin):
         return True
 
     def register(self):
+        assert not hasattr(self, 'bb_config')
         self.initConstants()
-        return BuilderConfig(
+        self.bb_config = BuilderConfig(
             name=self.getName(),
             slavenames=self.getSlaves(),
             factory=self.getFactory(),
@@ -184,6 +185,7 @@ class BuilderNewStyle(object, PropertiesMixin):
             properties=self.getFactoryProperties(props=self.builder_properties),
             canStartBuild = self.canStartBuild,
             locks=self.locks)
+        return self.bb_config
 
     #
     # Helpers

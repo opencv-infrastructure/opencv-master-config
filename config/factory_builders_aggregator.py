@@ -78,22 +78,21 @@ class SetOfBuilders(object):
 
     def RegisterBuilders(self):
         builders = []
-        builderNames = []
 
         builder_descriptors = self.GetListOfBuilders()
         for builder in builder_descriptors:
-            trace("Register builder: name=%s, slavenames=%s" % (builder.getName(), builder.getSlaves()))
+            builderName = builder.getName()
+            trace("Register builder: name=%s, slavenames=%s" % (builderName, builder.getSlaves()))
             try:
-                builders.append(builder.register())
-                builderNames.append(builder.getName())
+                builder.register()
+                builders.append(builder)
             except:
                 trace("Can't register builder: %s" % repr(builder))
                 raise
 
         self.builders = builders
-        self.builderNames = builderNames
 
-        return (builders, builderNames)
+        return builders
 
 
 
@@ -115,22 +114,26 @@ class SetOfBuildersWithSchedulers():
 
     def Register(self):
         builders = []
-        builderNames = []
 
         if isinstance(self.builders, list):
             for buildersSet in self.builders:
                 if isinstance(buildersSet, SetOfBuilders):
-                    (new_builders, new_builderNames) = buildersSet.RegisterBuilders()
+                    new_builders = buildersSet.RegisterBuilders()
+                    builders = builders + new_builders
                 else:
                     builder = buildersSet
-                    trace("Register builder: name=%s, slavenames=%s" % (builder.getName(), builder.getSlaves()))
-                    new_builders = [builder.register()]
-                    new_builderNames = [builder.getName()]
-
-                builders = builders + new_builders
-                builderNames = builderNames + new_builderNames
+                    builderName = builder.getName()
+                    trace("Register builder: name=%s, slavenames=%s" % (builderName, builder.getSlaves()))
+                    try:
+                        builder.register()
+                        builders.append(builder)
+                    except:
+                        trace("Can't register builder: %s" % repr(builder))
+                        raise
         else:
-            (builders, builderNames) = self.builders.RegisterBuilders()
+            builders = self.builders.RegisterBuilders()
+
+        builderNames = [b.bb_config.name for b in builders]
 
         schedulers = []
 
@@ -149,22 +152,25 @@ class SetOfBuildersWithSchedulers():
         if branch is not None:
             codebase = constants.codebase[branch]
         if self.genForce:
+            builderNames = [b.bb_config.name for b in builders]
             schedulers.append(ForceScheduler(name=self.nameprefix + 'force_' + branch,
                                              builderNames=builderNames,
                                              codebases=codebase.getCodebase()))
         if self.genNightly and not os.environ.get('DEBUG', False) and not os.environ.get('BUILDBOT_MANUAL', False):
             pref = 'nightly_' if self.dayOfWeek == '*' else 'daily_%s_' % self.dayOfWeek
+            builderNamesNightly = [b.bb_config.name for b in builders if getattr(b, 'schedulerNightly', None) != False]
             schedulers.append(Nightly(hour='*' if self.nightlyHour is None else self.nightlyHour,
                                       minute=0 if self.nightlyMinute is None else self.nightlyMinute,
                                       dayOfWeek = self.dayOfWeek,
-                                      name=self.nameprefix + pref + branch, builderNames=builderNames,
+                                      name=self.nameprefix + pref + branch, builderNames=builderNamesNightly,
                                       codebases=codebase.getCodebase(), branch=None))
         if self.genTrigger:
             schedulers.append(Triggerable(name=self.nameprefix + 'trigger' + ('_' + branch if branch is not None else ''),
                 builderNames=builderNames, codebases=codebase.getCodebase()))
 
         self.builders = builders
+        self.buildersConfig = [b.bb_config for b in builders]
         self.builderNames = builderNames
         self.schedulers = schedulers
 
-        return (builders, schedulers)
+        return (self.buildersConfig, schedulers)
