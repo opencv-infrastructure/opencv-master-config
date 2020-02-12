@@ -304,6 +304,7 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl', 'opencl'], platform=PLATFORM_SKYLAKE,
                         useName='openvino-opencl', dockerImage='ubuntu-openvino-2020.1.0:16.04',
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
+                        schedulerNightly=False,
                         useOpenCL=True, testOpenCL=True)),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
@@ -339,6 +340,7 @@ for branch in ['2.4', '3.4', 'master']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'windows', 'opencl'],
                         osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
                         useName='openvino-opencl', buildImage='openvino-2020.1.0', is64=True, compiler=None, useOpenCL=True, testOpenCL=True,
+                        schedulerNightly=False,
                         builder_properties={
                             'modules_filter':'dnn,python2,python3,java',
                             'parallel_tests': 1,
