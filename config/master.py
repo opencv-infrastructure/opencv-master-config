@@ -23,6 +23,11 @@ c['buildHorizon'] = 500
 c['logHorizon'] = 100
 c['eventHorizon'] = 50
 
+c['logCompressionLimit'] = 16384
+c['logCompressionMethod'] = 'bz2'
+c['logMaxSize'] = 32*1024*1024 # 32M
+c['logMaxTailSize'] = 32768
+
 ####### Main config #######
 
 import project_builders
