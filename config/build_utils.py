@@ -114,6 +114,9 @@ def isNotBranch34(self):
 def isBranchMaster(self):
     return not isBranch24(self) and not isBranch34(self)
 
+def valueToBool(v):
+    return v in ['ON', '1', 'TRUE', 'True', True, 1]
+
 def hideStepIfFn(result, s):
     return result not in [SUCCESS, WARNINGS, FAILURE, EXCEPTION, RETRY]
 
