@@ -914,12 +914,13 @@ class CommonFactory(BuilderNewStyle):
             res = [i for i in all if i not in main or i in ['java', 'python', 'python2', 'python3']]  # run bindings tests for contrib too
         if not self.runPython:
             res = [i for i in res if not isPythonTest(i)]
+        modules_force_list = str(self.getProperty('modules_force', '')).split(',')
+        modules_force_list = [i for i in modules_force_list if len(i) > 0]
         modulesFilter = self.getProperty('modules_filter')
         if modulesFilter:
             modulesList = modulesFilter.split(',')
-            return [i for i in res if i in modulesList]
-        modules_force_list = str(self.getProperty('modules_force', '')).split(',')
-        return [i for i in res if (i not in self.getTestBlacklist(isPerf)) or (i in modules_force_list)]
+            return modules_force_list + [i for i in res if i in modulesList]
+        return modules_force_list + [i for i in res if i not in self.getTestBlacklist(isPerf)]
 
     @defer.inlineCallbacks
     def testAll(self):
