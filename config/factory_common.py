@@ -344,7 +344,7 @@ class CommonFactory(BuilderNewStyle):
         if isBranch24(self):
             return ["gpu"]
         else:
-            return ["viz", "shape"] + (["stereo", "tracking", "imgcodecs"] if isPerf else ["flann"])
+            return ["viz", "shape"] + (["tracking", "imgcodecs"] if isPerf else ["flann"])
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''
