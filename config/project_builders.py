@@ -662,26 +662,44 @@ for branch in ['2.4', '3.4', 'master']:
     addConfiguration(
         SetOfBuildersWithSchedulers(nameprefix='winpack-', branch=branch,
             genForce=True, genNightly=genNightly, nightlyHour=3 if branch == '2.4' else 0, nightlyMinute=nightlyMinute, dayOfWeek = 6 if branch == '2.4' else '*',
-            builders=SetOfBuilders(
-                factory_class=WinPackController,
-                init_params=dict(
-                    osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
-                    buildTriggerName='winpackbuild-trigger_' + branch,
-                    createTriggerName='winpackcreate-trigger_' + branch,
-                    branch=branch, tags=['pack-' + branch])
-            )
+            builders=[
+                SetOfBuilders(
+                    factory_class=WinPackController,
+                    init_params=dict(
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        buildTriggerName='winpackbuild-trigger_' + branch,
+                        createTriggerName='winpackcreate-trigger_' + branch,
+                        branch=branch, tags=['pack-' + branch])
+                ),
+            ] + ([] if branch == '2.4' else [
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'dldt', 'windows', 'pack-' + branch],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        useName='winpack_dldt-build', buildImage='winpack-dldt-2020.1',
+                        is64=True, compiler=None, useOpenCL=True, testOpenCL=False,
+                        useSlave=['windows-1'])),
+                SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'dldt', 'windows', 'pack-' + branch, 'debug'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        useName='winpack_dldt-build', buildImage='winpack-dldt-2020.1-debug', isDebug=True,
+                        is64=True, compiler=None, useOpenCL=True, testOpenCL=False,
+                        useSlave=['windows-1'])),
+            ])
         )
     )
     addConfiguration(
         SetOfBuildersWithSchedulers(nameprefix='winpackcreate-', branch=branch,
             genForce=True, genTrigger=True,
-            builders=SetOfBuilders(
-                factory_class=WinPackCreate,
-                init_params=dict(osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
-                    testsTriggerName='winpacktests-trigger_' + branch,
-                    completionTriggerName='winpackupload-trigger_' + branch,
-                    branch=branch, tags=['pack-' + branch])
-            )
+            builders=
+                SetOfBuilders(
+                    factory_class=WinPackCreate,
+                    init_params=dict(osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        testsTriggerName='winpacktests-trigger_' + branch,
+                        completionTriggerName='winpackupload-trigger_' + branch,
+                        branch=branch, tags=['pack-' + branch])
+                ),
         )
     )
     addConfiguration(
