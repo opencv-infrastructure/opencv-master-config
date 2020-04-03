@@ -17,7 +17,7 @@ c['projectURL']  = "http://opencv.org"
 c['buildbotURL'] = "http://localhost:8010/"
 c['db_url'] = "sqlite:////data/db/state.sqlite"
 c['slavePortnum'] = 9989
-c['buildCacheSize'] = 50
+c['buildCacheSize'] = 20
 
 c['buildHorizon'] = 500
 c['logHorizon'] = 100
