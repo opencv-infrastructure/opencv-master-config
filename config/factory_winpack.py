@@ -155,6 +155,8 @@ class WinPackBuild(BaseFactory):
             self.cmakepars['ENABLE_SSE2'] = 'ON'
         else:
             self.cmakepars['CPU_BASELINE'] = 'SSE3' if self.is64 else 'SSE2'
+        if self.branch == 'master':
+            self.cmakepars['VIDEOIO_PLUGIN_LIST'] = 'all'
         self.cmakepars['WITH_TBB'] = 'OFF'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = Interpolate('%(prop:workdir)s/install')
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'
