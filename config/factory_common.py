@@ -192,6 +192,9 @@ class CommonFactory(BuilderNewStyle):
 
         self.env['BUILD_BRANCH'] = self.getProperty('branch', default='master')
 
+        if self.getProperty('build_debug', default=None):
+            self.isDebug = self.getProperty('build_debug', default=None) in ['ON', '1', 'TRUE', 'True']
+
         self.buildWithContrib = self.buildWithContrib and not isBranch24(self)  # precommit with 2.4 target
 
         if self.getProperty('build_contrib', default=None):

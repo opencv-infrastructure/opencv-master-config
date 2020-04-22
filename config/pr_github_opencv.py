@@ -213,6 +213,7 @@ class GitHubContext(pullrequest.context.Context):
             _processPropertyWIP('CPU_DISPATCH', 'build_cpu_dispatch')
             _processPropertyWIP('build_compiler', 'build_compiler')
             _processPropertyWIP('build_platform', 'build_platform')
+            _processPropertyWIP('build_debug', 'build_debug')
 
         self.pushBuildProperty(properties, pr.description, 'test_bigdata[-:]' + re_builder, 'test_bigdata')
 
