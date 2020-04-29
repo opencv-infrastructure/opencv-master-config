@@ -224,6 +224,8 @@ class GitHubContext(pullrequest.context.Context):
 
         _processProperty('buildworker', 'buildworker')
 
+        _processProperty('build_upload', 'build_upload')
+
         _processProperty('build_tbb', 'build_tbb')
         _processProperty('with_tbb', 'with_tbb')
         _processProperty('disable_ipp', 'disable_ipp')

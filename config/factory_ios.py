@@ -54,7 +54,7 @@ class iOSFactory(BaseFactory):
         if self.buildWithContrib:
             yield self.buildContribFramework()
 
-        if self.isPrecommit:
+        if self.isPrecommit and not self.getProperty('build_upload', default=None) in ['ON', '1', 'TRUE', 'True']:
             return
 
         step = MakeDirectory(dir="build/release")
