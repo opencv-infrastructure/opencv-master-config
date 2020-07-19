@@ -347,7 +347,7 @@ class CommonFactory(BuilderNewStyle):
         if isBranch24(self):
             return ["gpu"]
         else:
-            return ["viz", "shape"] + (["tracking", "imgcodecs"] if isPerf else ["flann"])
+            return ["viz", "shape"] + (["tracking", "imgcodecs"] if isPerf else [])
 
     def getTestMaxTime(self, isPerf):
         ''' total timeout for test execution, seconds '''
@@ -918,7 +918,7 @@ class CommonFactory(BuilderNewStyle):
         if not self.runPython:
             res = [i for i in res if not isPythonTest(i)]
         modules_force_list = str(self.getProperty('modules_force', '')).split(',')
-        modules_force_list = [i for i in modules_force_list if len(i) > 0]
+        modules_force_list = [i for i in modules_force_list if len(i) > 0 and i in res]
         modulesFilter = self.getProperty('modules_filter')
         if modulesFilter:
             modulesList = modulesFilter.split(',')
