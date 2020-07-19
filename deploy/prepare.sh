@@ -14,6 +14,7 @@ if [ ! -f /env/bin/activate ]; then
   pip install pyOpenSSL
   pip install sqlalchemy==0.7.10
   pip install sqlalchemy-migrate==0.7.2
+  pip install 'MarkupSafe<2.0,>=0.23'
 else
   . /env/bin/activate
 fi
