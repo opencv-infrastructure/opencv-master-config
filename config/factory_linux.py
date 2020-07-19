@@ -85,6 +85,7 @@ class AbiCompareCommand(ShellCommand):
                 "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*" + \
                 "|.*2cv16TLSDataContainer.*" + \
                 "|_ZN9_IplImageaSERKS_" + \
+                "|_ZN7cvflann7anyimpl.*" + \
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal",
@@ -125,6 +126,7 @@ class AbiCompareCommand(ShellCommand):
             "|_ZN12CvPoint.*" + \
             "|_ZN11CvSize.*" + \
             "|.*anon-union-types.*" + \
+            "|_ZN7cvflann7anyimpl.*" + \
             ""
         ])
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
