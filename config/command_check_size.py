@@ -42,9 +42,11 @@ class CheckSize(BuildStep):
                 yield self.updateSummary()
                 yield l.addStdout(u'"stat" returned: %s\n' % str(s))
                 yield l.addStdout(u'File size: %s\n' % self.getSize(True))
-                yield l.finish()
                 if self.sz >= self.warnLimit:
+                    yield l.addStdout(u'Patch size default limit exceeded: %s KiB\n' % (self.warnLimit // 1024))
+                    yield l.finish()
                     defer.returnValue(WARNINGS)
+                yield l.finish()
                 defer.returnValue(SUCCESS)
         yield l.finish()
         yield self.updateSummary()
