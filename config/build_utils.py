@@ -102,17 +102,20 @@ def getMergeCommand(codebase, workdir, doStepIf=True):
 def isBranch24(self):
     return self.getProperty('branch', default='master').startswith("2.4")
 
-def isNotBranch24(self):
-    return not isBranch24(self)
-
 def isBranch34(self):
     return self.getProperty('branch', default='master').startswith("3.4")
 
-def isNotBranch34(self):
-    return not isBranch34(self)
+def isBranch4x(self):
+    return self.getProperty('branch', default='master').startswith("master")
 
-def isBranchMaster(self):
-    return not isBranch24(self) and not isBranch34(self)
+def branchVersionMajor(self):
+    if isBranch24(self):
+        return 2
+    if isBranch34(self):
+        return 3
+    if isBranch4x(self):
+        return 4
+    return 5
 
 def valueToBool(v):
     return v in ['ON', '1', 'TRUE', 'True', True, 1]

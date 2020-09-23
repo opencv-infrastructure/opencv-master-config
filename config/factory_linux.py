@@ -7,7 +7,7 @@ from buildbot.steps.shell import ShellCommand, SetPropertyFromCommand, Compile
 from buildbot.steps.slave import RemoveDirectory, MakeDirectory
 from buildbot.process.properties import Interpolate
 
-from build_utils import OSType, isNotBranch24, isBranch24, isBranch34, valueToBool
+from build_utils import *
 from factory_ocl import OCL_factory as BaseFactory
 
 
@@ -131,6 +131,8 @@ class AbiCompareCommand(ShellCommand):
             # 4.4.0
             ""
         ])
+        if branchVersionMajor(builder) >= 5:
+            kwargs['flunkOnFailure'] = False  # TODO: OpenCV 5.0 turn check on
         ShellCommand.__init__(self, workdir='build', command=cmd, logfiles={"report": reportFile}, **kwargs)
 
 
@@ -176,9 +178,9 @@ class LinuxPrecommitFactory(BaseFactory):
 
     def set_cmake_parameters(self):
         BaseFactory.set_cmake_parameters(self)
-        if isNotBranch24(self):
+        if branchVersionMajor(self) > 2:
             self.cmakepars['GENERATE_ABI_DESCRIPTOR'] = 'ON'
-            if not isBranch34(self):
+            if branchVersionMajor(self) >= 4:
                 self.cmakepars['OPENCV_ABI_SKIP_MODULES_LIST'] = 'gapi'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = self.installPath
 
@@ -187,10 +189,10 @@ class LinuxPrecommitFactory(BaseFactory):
     def build(self):
         yield BaseFactory.cmake(self)
         yield BaseFactory.compile(self, config='debug' if self.isDebug else 'release', target='install')
-        if isNotBranch24(self):
+        if branchVersionMajor(self) > 2:
             if valueToBool(self.getProperty('build_examples', default=self.buildExamples)):
                 yield self.check_samples_standalone()
-            if isNotBranch24(self) and not self.isContrib:
+            if branchVersionMajor(self) > 2 and not self.isContrib:
                 if bool(self.getProperty('ci-run_abi_check', default=self.run_abi_check)):
                     yield self.check_abi()
         yield self.optional_build_gapi_standalone()

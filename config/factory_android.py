@@ -5,7 +5,7 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import MakeDirectory
 
 from factory_common import CommonFactory
-from build_utils import OSType, isBranch24, isBranch34
+from build_utils import *
 
 
 

@@ -42,6 +42,7 @@ class CodeBase:
 
 codebase = { }
 codebase['master'] = CodeBase('master')
+codebase['next'] = CodeBase('next')
 codebase['2.4'] = CodeBase('2.4')
 codebase['3.4'] = CodeBase('3.4')
 codebase['branch'] = CodeBase('master')

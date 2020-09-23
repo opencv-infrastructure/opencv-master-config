@@ -57,7 +57,14 @@ class Docs_factory(BaseFactory):
         self.cmakepars['WITH_IPP'] = 'OFF'  # Don't download ICV package
 
     def shouldUpload(self):
-        return not self.isPrecommit and ((self.branch in ['3.4', 'master'] and self.isContrib) or self.branch == '2.4')
+        if self.isPrecommit:
+            return False
+        targetBranchesWithContrib = [
+            '3.4',
+            'master',
+            'next'
+        ]
+        return (self.branch in targetBranchesWithContrib and self.isContrib) or self.branch == '2.4'
 
     def getCodebasePath(self, codebase):
         res = {
@@ -94,7 +101,7 @@ class Docs_factory(BaseFactory):
         yield self.compile(target='doxygen', desc='make doxygen', suppressionFile="../%s/doc/disabled_doc_warnings.txt" % self.SRC_OPENCV)
 
         if self.isPrecommit:
-            linter_targets = str(self.getProperty('linter_checks', default='check_pylint,check_flake8')).split(',') if isNotBranch24(self) else []
+            linter_targets = str(self.getProperty('linter_checks', default='check_pylint,check_flake8')).split(',') if branchVersionMajor(self) > 2 else []
             self.env['VERBOSE'] = '1'
             for t in linter_targets:
                 yield self.compile(target=t, desc='Run ' + t, warningPattern=re.compile(r'^warning[: ].*', re.I | re.S))

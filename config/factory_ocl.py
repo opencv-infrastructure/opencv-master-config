@@ -1,6 +1,6 @@
 from twisted.internet import defer
 
-from build_utils import OSType, isBranch24, isNotBranch24
+from build_utils import *
 from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, PLATFORM_SKYLAKE_X
 from factory_ipp import IPP_factory as BaseFactory
 
@@ -18,11 +18,11 @@ class OCL_factory(BaseFactory):
             self.openCLDevicePrefix = '' if not self.useIPP else 'ipp-' if self.useIPP == True else 'ippicv-'
         if self.useName is None:
             self.useName = 'noOCL' if self.buildOpenCL == False else None
-        if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-3' in self.useSlave and \
+        if self.platform in [PLATFORM_ANY, PLATFORM_DEFAULT] and self.testOpenCL and 'linux-3' in self.useSlave and \
             (not self.builder_properties or not 'buildworker' in self.builder_properties):
             print('OCL: Excluding linux-3 from builder: {} (props = {})'.format(self.getName(), str(self.builder_properties)))
             self.useSlave.remove('linux-3')
-        if self.platform == PLATFORM_ANY and self.testOpenCL and 'linux-5' in self.useSlave:
+        if self.platform in [PLATFORM_ANY, PLATFORM_DEFAULT] and self.testOpenCL and 'linux-5' in self.useSlave:
             print('OCL: Excluding linux-5 from builder: {} (props = {})'.format(self.getName(), str(self.builder_properties)))
             self.useSlave.remove('linux-5')
 
@@ -38,7 +38,12 @@ class OCL_factory(BaseFactory):
 
         if self.testOpenCL and self.buildImage is None:
             if self.osType == OSType.LINUX:
-                self.buildImage = (None, 'ubuntu:16.04') if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+                if self.is64 is False:
+                    self.buildImage = (None, 'ubuntu32:16.04')
+                elif branchVersionMajor(self) <= 3:
+                    self.buildImage = (None, 'ubuntu:16.04')
+                else:
+                    self.buildImage = (None, 'ubuntu:20.04')
 
         yield BaseFactory.runPrepare(self)
 
@@ -104,7 +109,7 @@ class OCL_factory(BaseFactory):
 
             self.env = env_backup
 
-            parallel_N = min(int(self.getProperty('parallel_tests', 2)), 2) if isNotBranch24(self) else 1
+            parallel_N = min(int(self.getProperty('parallel_tests', 2)), 2) if branchVersionMajor(self) > 2 else 1
             print('Running {} tests in parallel ({})'.format(len(steps), parallel_N))
             yield self.bb_build.processStepsInParallel(steps, parallel_N)
 

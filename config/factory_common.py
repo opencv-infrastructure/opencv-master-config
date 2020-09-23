@@ -73,6 +73,14 @@ def getResultFileNameRenderer(testPrefix, test, testSuffix, fileSuffix='xml'):
         return name
     return resultFileName
 
+
+validBranches = [
+    '3.4',
+    'master',
+    'next',
+]
+
+
 class CommonFactory(BuilderNewStyle):
 
     SRC_OPENCV = 'opencv'
@@ -109,7 +117,6 @@ class CommonFactory(BuilderNewStyle):
         if not hasattr(self, 'platform'):
             self.platform = kwargs.pop('platform', None)
         self.branch = kwargs.pop('branch', None)
-        self.branchSafeName = self.branch.replace('.', '_') if self.branch else None
         self.osType = kwargs.pop('osType', None)
         self.androidABI = kwargs.pop('androidABI', None)
         assert self.androidABI is None or self.osType == OSType.ANDROID
@@ -120,8 +127,7 @@ class CommonFactory(BuilderNewStyle):
         assert not (self.buildShared is None)
         self.buildDocs = kwargs.pop('buildDocs', False)
         assert not (self.buildDocs is None)
-        self.buildExamples = kwargs.pop('buildExamples', True)
-        assert not (self.buildExamples is None)
+        self.buildExamples = kwargs.pop('buildExamples', True if self.osType != OSType.ANDROID else None)
         self.useSSE = kwargs.pop('useSSE', None) # TODO Rename to useIntrinsics
         self.isDebug = kwargs.pop('isDebug', False)
         self.runPython = kwargs.pop('runPython', self.osType != OSType.ANDROID and not (self.isDebug and self.osType == OSType.WINDOWS))
@@ -145,6 +151,17 @@ class CommonFactory(BuilderNewStyle):
         self.suppressions = None
         self.buildImage = kwargs.pop('buildImage', kwargs.pop('dockerImage', None))
 
+        self.branchExtraConfiguration = kwargs.pop('branchExtraConfiguration', None)  # dictionary or callable
+        if self.branchExtraConfiguration is not None:
+            assert hasattr(self.branchExtraConfiguration, '__call__') or isinstance(self.branchExtraConfiguration, dict)
+            if isinstance(self.branchExtraConfiguration, dict):
+                for key in self.branchExtraConfiguration.keys():
+                    assert key in validBranches
+
+        self.branchSafeName = self.branch.replace('.', '_') if self.branch else None
+        if self.branch == 'next':
+            self.branchSafeName = '5_x'
+
         BuilderNewStyle.__init__(self, **kwargs)
 
         if self.useSlave is None:
@@ -164,10 +181,9 @@ class CommonFactory(BuilderNewStyle):
                     #if not self.isPrecommit:
                     #    self.useSlave = ['macosx-1']
                 elif self.osType == OSType.ANDROID:
-                    self.useSlave += ['linux-4']
-                    if self.branch != 'master':
-                        self.useSlave += ['linux-1', 'linux-2']
-            if self.platform in [PLATFORM_SKYLAKE_X, PLATFORM_ANY]:
+                    self.useSlave += ['linux-4']  # TODO: linux-6
+            if self.platform in [PLATFORM_SKYLAKE_X, PLATFORM_ANY] or \
+                    (self.platform in [PLATFORM_DEFAULT] and self.branch != '2.4' and not (self.useSSE == False) and self.buildShared == False):
                 if self.osType == OSType.LINUX:
                     if self.is64 is None or self.is64:
                         self.useSlave += ['linux-3']
@@ -190,7 +206,24 @@ class CommonFactory(BuilderNewStyle):
     def runPrepare(self):
         yield BuilderNewStyle.runPrepare(self)
 
-        self.env['BUILD_BRANCH'] = self.getProperty('branch', default='master')
+        branch = self.getProperty('branch', default=None)
+        self.env['BUILD_BRANCH'] = branch if branch is not None else 'master'
+
+        if self.branchExtraConfiguration is not None:
+            assert branch is not None
+            if hasattr(self.branchExtraConfiguration, '__call__'):
+                params = self.branchExtraConfiguration(self, branch)
+            else:
+                params = self.branchExtraConfiguration[branch] if branch in self.branchExtraConfiguration else None
+            if params is not None:
+                assert isinstance(params, dict)
+                invalidKeys = [  # can't update these values
+                    'branch'
+                ]
+                for key, value in params.items():
+                    assert hasattr(self, key), key
+                    assert not key in invalidKeys, key
+                    setattr(self, key, value)
 
         if self.getProperty('build_debug', default=None):
             self.isDebug = self.getProperty('build_debug', default=None) in ['ON', '1', 'TRUE', 'True']
@@ -206,16 +239,29 @@ class CommonFactory(BuilderNewStyle):
 
         if self.buildImage is None:
             if self.osType == OSType.LINUX:
-                default_docker = (None, 'ubuntu:14.04') if not isBranchMaster(self) else (None, 'ubuntu:16.04')
+                if branchVersionMajor(self) <= 3:
+                    default_docker = (None, 'ubuntu:14.04') if not self.isDebug else (None, 'ubuntu:16.04')
+                elif branchVersionMajor(self) <= 4:
+                    default_docker = (None, 'ubuntu:16.04')
+                else:
+                    default_docker = (None, 'ubuntu:18.04') if not self.isDebug else (None, 'ubuntu:16.04')
                 self.buildImage = default_docker if not (self.is64 is False) else (None, 'ubuntu32:16.04')
+            elif self.osType == OSType.WINDOWS:
+                if self.cmake_platform is None:
+                    if self.compiler == WinCompiler.VC14:
+                        self.buildImage = (None, 'msvs2015') if not (self.is64 is False) else (None, 'msvs2015-win32')
+                    elif self.compiler == WinCompiler.VC15:
+                        self.buildImage = (None, 'msvs2017') if not (self.is64 is False) else (None, 'msvs2017-win32')
+                    elif self.compiler == WinCompiler.VC16:
+                        self.buildImage = (None, 'msvs2019') if not (self.is64 is False) else (None, 'msvs2019-win32')
             elif self.osType == OSType.ANDROID:
-                self.buildImage = (None, 'android:14.04') if not isBranchMaster(self) else (None, 'android-gradle')
+                self.buildImage = (None, 'android:14.04') if branchVersionMajor(self) <= 3 else (None, 'android-gradle')
             else:
                 # not applicable
                 pass
 
         if self.isPrecommit:
-            prefix = self.bb_requests[0].properties.getProperty('branch', default=None)
+            prefix = branch
             if prefix and prefix != 'master':
                 self.SRC_OPENCV = prefix + '/' + self.SRC_OPENCV
                 self.SRC_OPENCV_EXT = prefix + '/' + self.SRC_OPENCV_EXT
@@ -287,13 +333,14 @@ class CommonFactory(BuilderNewStyle):
     def getTags(self):
         res = list(BuilderNewStyle.getTags(self))
 
-        # takes one of 'master', 'master-contrib', '2.4'
         if self.branch == '2.4':
-            second = '2.4'
+            second = '2.x'
         elif self.branch == '3.4':
-            second = '3.4'
+            second = '3.x'
+        elif self.branch == 'master':
+            second = '4.x'
         else:
-            second = 'master'
+            second = '5.x'
 
         if self.isContrib and self.branch != '2.4':
             second += '-contrib'
@@ -308,6 +355,7 @@ class CommonFactory(BuilderNewStyle):
             res.append('precommit-' + third)
         else:
             res.append('branch-' + self.branch)
+            res.append('branch-' + second)
             res.append('scheduled')
             res.append('scheduled-' + second)
         res.append('os-' + self.osType)
@@ -315,7 +363,7 @@ class CommonFactory(BuilderNewStyle):
         return list(set(res))
 
 
-    def getRunPy(self, full = False):
+    def getRunPy(self, full=False):
         '''
         full is True - return list with options suitable for shell command
         full is False - return string with path to script
@@ -327,7 +375,7 @@ class CommonFactory(BuilderNewStyle):
             run_py = [f]
             if self.isDebug:
                 run_py.append('--configuration=Debug')
-                if isNotBranch24(self):
+                if branchVersionMajor(self) > 2:
                     run_py.append('--test_tag_skip=size_hd')
             if self.androidABI:
                 run_py += ['--android_propagate_opencv_env', '--android_test_data_path /data/local/tmp/opencv/testdata/']
@@ -422,11 +470,12 @@ class CommonFactory(BuilderNewStyle):
                 alwaysRun=True)
         yield self.processStep(step)
         del env['BUILD_FINALIZE']
-        env['BUILD_CLEANUP'] = '1'
-        step = ShellCommand(name='cleanup', descriptionDone=' ', description=' ',
-                command=self.envCmd + 'echo Cleanup', env=env, workdir='.',
-                alwaysRun=False) # skip cleanup on failures for debug purposes
+        # skip cleanup on failures for debug purposes
         if self.bb_build.result == SUCCESS and self.isPrecommit != True:
+            env['BUILD_CLEANUP'] = '1'
+            step = ShellCommand(name='cleanup', descriptionDone=' ', description=' ',
+                    command=self.envCmd + 'echo Cleanup', env=env, workdir='.',
+                    alwaysRun=False)
             yield self.processStep(step)
 
 
@@ -588,13 +637,13 @@ class CommonFactory(BuilderNewStyle):
         if self.isDebug:
             self.cmakepars['CMAKE_BUILD_TYPE'] = 'Debug'
 
-        if self.osType == OSType.LINUX and isNotBranch24(self):
+        if self.osType == OSType.LINUX and branchVersionMajor(self) > 2:
             self.cmakepars['WITH_OPENNI2'] = 'ON'
             self.cmakepars['WITH_GDAL'] = 'ON'
             self.cmakepars['PYTHON_DEFAULT_EXECUTABLE'] = '/usr/bin/python3'
             self.cmakepars['WITH_GDCM'] = 'ON'
 
-        if self.isPrecommit and isNotBranch24(self) and self.osType == OSType.WINDOWS and hasattr(self, 'buildOpenCL'):
+        if self.isPrecommit and branchVersionMajor(self) > 2 and self.osType == OSType.WINDOWS and hasattr(self, 'buildOpenCL'):
             if self.buildOpenCL:
                 self.cmakepars['WITH_DSHOW'] = 'ON'
                 self.cmakepars['WITH_VFW'] = 'ON'
@@ -602,7 +651,7 @@ class CommonFactory(BuilderNewStyle):
         if self.buildWithContrib:
             self.cmakepars['OPENCV_EXTRA_MODULES_PATH'] = self.getProperty('workdir') + '/' + self.SRC_OPENCV_CONTRIB + '/modules'
 
-        if self.isPrecommit and isNotBranch24(self):
+        if self.isPrecommit and branchVersionMajor(self) > 2:
             self.cmakepars['OPENCV_ENABLE_NONFREE'] = 'ON'
 
         if self.getProperty('build_world', default=None):

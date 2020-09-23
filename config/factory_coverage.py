@@ -36,6 +36,7 @@ class CoverageFactory(ParentClass):
         cmake_parameters = kwargs.pop('cmake_parameters', {})
         cmake_parameters['WITH_IPP'] = 'OFF'
         kwargs['cmake_parameters'] = cmake_parameters
+        kwargs['buildExamples'] = False
         ParentClass.__init__(self, **kwargs)
 
     @defer.inlineCallbacks
@@ -50,7 +51,19 @@ class CoverageFactory(ParentClass):
         self.cmakepars['ENABLE_PRECOMPILED_HEADERS'] = 'OFF'
         self.cmakepars['CPU_BASELINE'] = 'HOST'
         self.cmakepars['CPU_DISPATCH'] = ''
+        self.cmakepars['OPENCV_EXTRA_FLAGS_DEBUG'] = '-O1'
         self.cmakepars['WITH_IPP'] = 'OFF'
+
+    def getTestList(self, isPerf=False):
+        if isPerf:
+            return []  # don't run perf tests on coverage
+        return ParentClass.getTestList(self, isPerf)
+
+    def getRunPy(self, full=False):
+        run_py = ParentClass.getRunPy(self, full)
+        if full:
+            run_py.append('--test_threads=2')
+        return run_py
 
     @defer.inlineCallbacks
     def testAll(self):

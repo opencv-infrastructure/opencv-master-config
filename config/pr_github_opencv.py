@@ -169,7 +169,19 @@ class GitHubContext(pullrequest.context.Context):
         defer.returnValue(True)
 
     def isBadBranch(self, pr):
-        return pr.head_branch in ['master', '2.4', '3.4']
+        if pr.branch in [
+            '2.4',  # EOL in 2020
+        ]:
+            return True
+        if pr.head_branch in [
+            'master',
+            '2.4',
+            '3.4',
+            '4.x',
+            'next',
+        ]:
+            return True
+        return False
 
     def isWIP(self, pr):
         if hasattr(pr, 'description') and pr.description:
@@ -179,6 +191,8 @@ class GitHubContext(pullrequest.context.Context):
 
     def applyBuildCommonOptions(self, pr, b, properties, sourcestamps):
         properties.setProperty('branch', pr.branch, 'Pull request')
+        if str(pr.prid) == '18279':  # FIXIT: remove this
+            properties.setProperty('branch', 'next', 'Pull request (next)')
         properties.setProperty('head_sha', pr.head_sha, 'Pull request')
         properties.setProperty('pullrequest', pr.prid, 'Pull request')
         if b.isPerf:

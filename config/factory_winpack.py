@@ -16,8 +16,7 @@ import constants
 from factory_common import CommonFactory as BaseFactory
 from factory_common import getDropRoot
 
-from build_utils import OSType
-from build_utils import WinCompiler
+from build_utils import *
 
 BLOCK_SIZE=512*1024
 
@@ -83,11 +82,17 @@ class WinPackBuild(BaseFactory):
 
     @defer.inlineCallbacks
     def build(self):
+        if branchVersionMajor(self) >= 4:
+            self.cmakepars['VIDEOIO_PLUGIN_LIST'] = 'all'
+
         yield self.cmake()
         yield self.compile(config='debug', target='install', useClean=False)
         yield self.compile(config='release', target='install', useClean=False)
 
-        if (self.branch == '3.4' or self.branch == 'master') and self.compiler == 'vc14':
+        if branchVersionMajor(self) >= 4:
+            del self.cmakepars['VIDEOIO_PLUGIN_LIST']
+
+        if branchVersionMajor(self) in [3, 4] and self.compiler == 'vc14':
             yield self.compile(config='release', target='gen_opencv_python_source', useClean=False)
             py_cmakepars = {}
             py_cmakepars['OpenCV_BINARY_DIR'] = Interpolate('%(prop:workdir)s/build')
@@ -113,6 +118,19 @@ class WinPackBuild(BaseFactory):
             yield self.cmake(desc='cmake_py27', builddir='build/python_27', cmakedir=py_dir, cmakepars=py_cmakepars)
             yield self.compile(builddir='build/python_27', config='release', target='install', useClean=False)
 
+        if branchVersionMajor(self) >= 5 and self.compiler == 'vc16':
+            yield self.compile(config='release', target='gen_opencv_python_source', useClean=False)
+            py_cmakepars = {}
+            py_cmakepars['OpenCV_BINARY_DIR'] = Interpolate('%(prop:workdir)s/build')
+            py_cmakepars['PYTHON_LIMITED_API'] = 'ON'
+            py_dir = '../../' + self.SRC_OPENCV + '/modules/python'
+
+            self.env['BUILD_PYTHON3'] = '38'
+            yield self.cmake(desc='cmake_py38', builddir='build/python_38', cmakedir=py_dir, cmakepars=py_cmakepars)
+            yield self.compile(builddir='build/python_38', config='release', target='install', useClean=False)
+
+            del self.env['BUILD_PYTHON3']
+
 
     @defer.inlineCallbacks
     def after_build_steps(self):
@@ -130,6 +148,8 @@ class WinPackBuild(BaseFactory):
             if self.compiler == 'vc14':
                 return ['windows-1']
             if self.compiler == 'vc15':
+                return ['windows-1']
+            if self.compiler == 'vc16':
                 return ['windows-1']
         else:
             return ['linux-1', 'linux-2']
@@ -155,8 +175,6 @@ class WinPackBuild(BaseFactory):
             self.cmakepars['ENABLE_SSE2'] = 'ON'
         else:
             self.cmakepars['CPU_BASELINE'] = 'SSE3' if self.is64 else 'SSE2'
-        if self.branch == 'master':
-            self.cmakepars['VIDEOIO_PLUGIN_LIST'] = 'all'
         self.cmakepars['WITH_TBB'] = 'OFF'
         self.cmakepars['CMAKE_INSTALL_PREFIX'] = Interpolate('%(prop:workdir)s/install')
         self.cmakepars['INSTALL_CREATE_DISTRIB'] = 'ON'
@@ -217,8 +235,11 @@ class WinPackBindings(WinPackBuild):
         self.cmakepars['BUILD_opencv_java'] = 'ON'
         if self.branch == '2.4':
             self.cmakepars['BUILD_opencv_python'] = 'ON'
-        elif self.branch == 'master':
+        elif branchVersionMajor(self) == 4:
             self.cmakepars['BUILD_opencv_python2'] = 'ON'
+            self.cmakepars['BUILD_opencv_python3'] = 'OFF'
+        elif branchVersionMajor(self) >= 5:
+            self.cmakepars['BUILD_opencv_python2'] = 'OFF'
             self.cmakepars['BUILD_opencv_python3'] = 'OFF'
         self.cmakepars['INSTALL_PDB'] = 'OFF'
         del self.cmakepars['INSTALL_PDB_COMPONENT_EXCLUDE_FROM_ALL']

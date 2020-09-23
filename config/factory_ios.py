@@ -5,7 +5,7 @@ from twisted.internet import defer
 from buildbot.steps.shell import ShellCommand, Compile
 from buildbot.steps.slave import MakeDirectory
 
-from build_utils import OSType, isBranch24
+from build_utils import OSType
 from factory_ocl import OCL_factory as BaseFactory
 
 
