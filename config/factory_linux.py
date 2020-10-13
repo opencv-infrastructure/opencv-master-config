@@ -37,17 +37,17 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             if isBranch34(builder):
-                print 'ABI: fallback to 3.4.11'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.11.abi.tar.gz'}
+                print 'ABI: fallback to 3.4.12'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.12.abi.tar.gz'}
             else:
-                print 'ABI: fallback to 4.4.0'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-4.4.0.abi.tar.gz'}
+                print 'ABI: fallback to 4.5.0'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.5.0.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.4.11' if isBranch34(self.build) else '4.4.0')
+        verString = self.getProperty('commit-description', '3.4.12' if isBranch34(self.build) else '4.5.0')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
@@ -75,60 +75,63 @@ class AbiCompareCommand(ShellCommand):
             "-new", resultFile,
             "-report-path", reportFile,
         ] + ([
-            "-skip-internal", ".*UMatData.*|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
-                "_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
-                ".*experimental_.*" + \
-                "|_ZN9_IplImageC.*|_ZN7CvMatNDC.*" + \
-                "|.*2cv10AutoBuffer.*" + \
-                "|_ZN2cv7MomentsC.*" + \
-                "|.*Durand.*" + \
-                "|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*" + \
-                "|.*2cv16TLSDataContainer.*" + \
-                "|_ZN9_IplImageaSERKS_" + \
-                "|_ZN7cvflann7anyimpl.*" + \
+            "-skip-internal", ".*UMatData.*" + \
+                #"|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
+                #"_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
+                #".*experimental_.*" + \
+                #"|_ZN9_IplImageC.*|_ZN7CvMatNDC.*" + \
+                #"|.*2cv10AutoBuffer.*" + \
+                #"|_ZN2cv7MomentsC.*" + \
+                #"|.*Durand.*" + \
+                #"|_ZN[0-9]+Cv.+(C1|C2|D0|D1|D2|SE).*" + \
+                #"|.*2cv16TLSDataContainer.*" + \
+                #"|_ZN9_IplImageaSERKS_" + \
+                #"|_ZN7cvflann7anyimpl.*" + \
                 # 3.4.11
+                # 3.4.12
                 ""
         ] if isBranch34(builder) else [
-            "-skip-internal",
-            "_ZN2cv11GGPUContext.*|" + \
-            "_ZN2cv10GGPUKernel.*|" + \
-            ".*scalar_wrapper_gpu.*|" + \
-            "_ZN2cv4gapi3gpu7backendEv|" + \
-            "_ZN2cv4gapi7imgproc3gpu7kernelsEv" + \
-            "|.*Durand.*" + \
-            "|_ZN2cv3dnn16readNetFromTorchERKNSt7__cxx1112basic_stringIcEEb" + \
-            "|_ZN2cv7MatExprC.*" + \
-            "|_ZN2cv4gapi7combineERKNS0_14GKernelPackageES3_NS_12unite_policyE" + \
-            "|_ZNK2cv4gapi14GKernelPackage6lookupERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt6vectorINS0_8GBackendESaISB_EE" + \
-            "|_ZN2cv12GIOProtoArgsINS_6In_TagEEC.*" + \
-            "|_ZN2cv12GIOProtoArgsINS_7Out_TagEEC.*" + \
-            "|_ZN2cv12GComputation5applyERKSt6vectorINS_3MatESaIS2_EES6_OS1_INS_11GCompileArgESaIS7_EE" + \
-            "|_ZN2cv4gapi5LUT3DERKNS_4GMatERKNS_4GMatEi" + \
-            "|_ZN2cv3dnn9CropLayer.*" + \
-            "|.*8descr_of.*" + \
-            "|.*4gapi3wip.*" + \
-            "|_ZN2cv4gapi3ocv7kernelsEv" + \
-            "|_ZN2cv9GCompiledclEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EE" + \
-            "|_ZN2cv12GComputation5applyEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EEOS1_INS_11GCompileArgESaISR_EE" + \
-            "|.*detail.*BasicVectorRef.*" + \
-            "|.*detail.*tracked_cv_umat.*" + "|.*ocl_get_out.*GMat.*" + \
-            "|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
-            "|.*2cv5instr.*" + \
-            "|.*12GFluidKernel.*" + \
-            "|_ZN9_IplImageaSERKS_" + \
-            "|_ZN16CvNArrayIteratorC.*" + \
-            "|_ZN2cv7MomentsC.*" + \
-            "|_ZN2cv7MomentsD.*" + \
-            "|_ZN7CvChain.*" + \
-            "|_ZN15CvChainPtReader.*" + \
-            "|_ZN15CvConnectedComp.*" + \
-            "|_ZN9CvContour.*" + \
-            "|_ZN11CvHistogram.*" + \
-            "|_ZN12CvPoint.*" + \
-            "|_ZN11CvSize.*" + \
-            "|.*anon-union-types.*" + \
-            "|_ZN7cvflann7anyimpl.*" + \
+            "-skip-internal", ".*UMatData.*" + \
+            #"_ZN2cv11GGPUContext.*|" + \
+            #"_ZN2cv10GGPUKernel.*|" + \
+            #".*scalar_wrapper_gpu.*|" + \
+            #"_ZN2cv4gapi3gpu7backendEv|" + \
+            #"_ZN2cv4gapi7imgproc3gpu7kernelsEv" + \
+            #"|.*Durand.*" + \
+            #"|_ZN2cv3dnn16readNetFromTorchERKNSt7__cxx1112basic_stringIcEEb" + \
+            #"|_ZN2cv7MatExprC.*" + \
+            #"|_ZN2cv4gapi7combineERKNS0_14GKernelPackageES3_NS_12unite_policyE" + \
+            #"|_ZNK2cv4gapi14GKernelPackage6lookupERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt6vectorINS0_8GBackendESaISB_EE" + \
+            #"|_ZN2cv12GIOProtoArgsINS_6In_TagEEC.*" + \
+            #"|_ZN2cv12GIOProtoArgsINS_7Out_TagEEC.*" + \
+            #"|_ZN2cv12GComputation5applyERKSt6vectorINS_3MatESaIS2_EES6_OS1_INS_11GCompileArgESaIS7_EE" + \
+            #"|_ZN2cv4gapi5LUT3DERKNS_4GMatERKNS_4GMatEi" + \
+            #"|_ZN2cv3dnn9CropLayer.*" + \
+            #"|.*8descr_of.*" + \
+            #"|.*4gapi3wip.*" + \
+            #"|_ZN2cv4gapi3ocv7kernelsEv" + \
+            #"|_ZN2cv9GCompiledclEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EE" + \
+            #"|_ZN2cv12GComputation5applyEOSt6vectorINS_4util7variantIJNS_3MatENS_7Scalar_IdEENS_4UMatENS_4gapi3own3MatENS9_6ScalarENS_6detail9VectorRefEEEESaISE_EEOS1_INS3_IJPS4_PS6_PS7_PSA_PSB_SD_EEESaISN_EEOS1_INS_11GCompileArgESaISR_EE" + \
+            #"|.*detail.*BasicVectorRef.*" + \
+            #"|.*detail.*tracked_cv_umat.*" + "|.*ocl_get_out.*GMat.*" + \
+            #"|_ZN2cv4gapi7imgproc3cpu7kernelsEv|_ZN2cv4gapi7imgproc5fluid7kernelsEv|_ZN2cv4gapi7imgproc3ocl7kernelsEv" + \
+            #"|.*2cv5instr.*" + \
+            #"|.*12GFluidKernel.*" + \
+            #"|_ZN9_IplImageaSERKS_" + \
+            #"|_ZN16CvNArrayIteratorC.*" + \
+            #"|_ZN2cv7MomentsC.*" + \
+            #"|_ZN2cv7MomentsD.*" + \
+            #"|_ZN7CvChain.*" + \
+            #"|_ZN15CvChainPtReader.*" + \
+            #"|_ZN15CvConnectedComp.*" + \
+            #"|_ZN9CvContour.*" + \
+            #"|_ZN11CvHistogram.*" + \
+            #"|_ZN12CvPoint.*" + \
+            #"|_ZN11CvSize.*" + \
+            #"|.*anon-union-types.*" + \
+            #"|_ZN7cvflann7anyimpl.*" + \
             # 4.4.0
+            # 4.5.0
             ""
         ])
         if branchVersionMajor(builder) >= 5:
