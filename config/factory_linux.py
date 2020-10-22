@@ -76,9 +76,9 @@ class AbiCompareCommand(ShellCommand):
             "-report-path", reportFile,
         ] + ([
             "-skip-internal", ".*UMatData.*" + \
+                "|.*experimental_.*" + \
                 #"|.*randGaussMixture.*|.*cv.*hal.*(Filter2D|Morph|SepFilter2D).*|" + \
                 #"_ZN2cv3ocl7ProgramC1ERKNS_6StringE|_ZN2cv3ocl7ProgramC2ERKNS_6StringE|" + \
-                #".*experimental_.*" + \
                 #"|_ZN9_IplImageC.*|_ZN7CvMatNDC.*" + \
                 #"|.*2cv10AutoBuffer.*" + \
                 #"|_ZN2cv7MomentsC.*" + \
@@ -92,6 +92,7 @@ class AbiCompareCommand(ShellCommand):
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal", ".*UMatData.*" + \
+            "|.*experimental_.*" + \
             #"_ZN2cv11GGPUContext.*|" + \
             #"_ZN2cv10GGPUKernel.*|" + \
             #".*scalar_wrapper_gpu.*|" + \
@@ -132,6 +133,7 @@ class AbiCompareCommand(ShellCommand):
             #"|_ZN7cvflann7anyimpl.*" + \
             # 4.4.0
             # 4.5.0
+            "|_ZN2cv3dnn.*" + \
             ""
         ])
         if branchVersionMajor(builder) >= 5:
