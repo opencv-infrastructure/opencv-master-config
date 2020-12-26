@@ -311,7 +311,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'openvino', 'skl', 'opencl'], platform=PLATFORM_SKYLAKE,
                         useName='openvino-opencl', dockerImage='ubuntu-openvino-2021.1.0:20.04',
-                        builder_properties={'modules_filter':'dnn,python2,python3,java,gapi', 'parallel_tests': 1, 'test_filter': '*YOLO*:*VINO*:*Infer*'},
+                        builder_properties={'modules_filter':'dnn,python2,python3,java,gapi', 'parallel_tests': 1, 'test_filter': '*YOLO*:*VINO*:*Infer*:*Layer*:*layer*'},
                         #schedulerNightly=False,
                         useOpenCL=True, testOpenCL=True)),
                 SetOfBuilders(
@@ -351,7 +351,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         #schedulerNightly=False,
                         builder_properties={
                             'modules_filter':'dnn,python2,python3,java,gapi',
-                            'test_filter': '*YOLO*:*VINO*:*Infer*',
+                            'test_filter': '*YOLO*:*VINO*:*Infer*:*Layer*:*layer*',
                             'parallel_tests': 1,
                             'test_maxtime': 2*60*60,
                         },
