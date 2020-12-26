@@ -37,17 +37,17 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             if isBranch34(builder):
-                print 'ABI: fallback to 3.4.12'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.12.abi.tar.gz'}
+                print 'ABI: fallback to 3.4.13'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.13.abi.tar.gz'}
             else:
-                print 'ABI: fallback to 4.5.0'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-4.5.0.abi.tar.gz'}
+                print 'ABI: fallback to 4.5.1'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.5.1.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.4.12' if isBranch34(self.build) else '4.5.0')
+        verString = self.getProperty('commit-description', '3.4.13' if isBranch34(self.build) else '4.5.1')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
@@ -89,6 +89,7 @@ class AbiCompareCommand(ShellCommand):
                 #"|_ZN7cvflann7anyimpl.*" + \
                 # 3.4.11
                 # 3.4.12
+                # 3.4.13
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal", ".*UMatData.*" + \
@@ -133,7 +134,8 @@ class AbiCompareCommand(ShellCommand):
             #"|_ZN7cvflann7anyimpl.*" + \
             # 4.4.0
             # 4.5.0
-            "|_ZN2cv3dnn.*" + \
+            #"|_ZN2cv3dnn.*" + \
+            # 4.5.1
             ""
         ])
         if branchVersionMajor(builder) >= 5:
