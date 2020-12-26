@@ -30,7 +30,7 @@ class iOSFactory(BaseFactory):
                 warnOnWarnings=True,
                 workdir='build', env=self.env,
                 command=self.envCmd + "python ../%s/platforms/ios/build_framework.py build_ios" % self.SRC_OPENCV,
-                timeout=3*60
+                maxTime=2*60*60, timeout=10*60
             )
         yield self.processStep(step)
 
@@ -42,7 +42,7 @@ class iOSFactory(BaseFactory):
                     warnOnWarnings=True,
                     workdir='build', env=self.env,
                     command=self.envCmd + "python ../%s/platforms/ios/build_framework.py --contrib ../%s build_ios_contrib" % (self.SRC_OPENCV, self.SRC_OPENCV_CONTRIB),
-                    timeout=3*60
+                    maxTime=2*60*60, timeout=10*60
             )
         yield self.processStep(step)
 
