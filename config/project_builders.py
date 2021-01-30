@@ -581,7 +581,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         useName='halide', dockerImage='halide:16.04',
                         useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'],
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
-                        useOpenCL=True, testOpenCL=True)
+                        useOpenCL=True, testOpenCL=False)
                 ),
             ] if cvVersion >= 3 else []) + ([
                 SetOfBuilders(
