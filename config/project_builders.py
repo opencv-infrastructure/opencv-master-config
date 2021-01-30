@@ -273,7 +273,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     factory_class=AndroidPackFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.ANDROID, is64=True, useName='pack',
-                                     useSlave=['linux-4'],
+                                     useSlave=['linux-4', 'linux-6'],
                     )
                 ),
                 SetOfBuilders(
@@ -284,7 +284,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'powerpc'], useName='powerpc-64le', dockerImage='powerpc64le',
-                                     useSlave=['linux-1','linux-2','linux-4'])
+                                     useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'])
                 ),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
@@ -294,12 +294,12 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-emscripten', dockerImage='javascript',
-                                     useSlave=['linux-1','linux-2','linux-4'])
+                                     useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'])
                 ),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'js'], useName='javascript-simd-emscripten', dockerImage='javascript-simd',
-                                     useSlave=['linux-1','linux-2','linux-4'])
+                                     useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'])
                 ),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
@@ -397,14 +397,14 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'qt', 'openmp', 'ninja'],
                         useName='etc-qt-openmp', dockerImage='qt:16.04', cmake_generator='Ninja',
                         cmake_parameters={'WITH_OPENMP': 'ON'},
-                        useSlave=['linux-1','linux-2','linux-4'],
+                        useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'],
                         useOpenCL=True, testOpenCL=False)),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'fedora', 'tbb', 'ninja'],
                         useName='etc-fedora-tbb', dockerImage='fedora:28', cmake_generator='Ninja',
                         cmake_parameters={'WITH_TBB': 'ON'},
-                        useSlave=['linux-1','linux-2','linux-4'],
+                        useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'],
                         useOpenCL=True, testOpenCL=False)),
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
@@ -412,7 +412,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         useName='etc-ffmpeg-master', dockerImage='ffmpeg-master', cmake_generator='Ninja',
                         cmake_parameters={'WITH_GSTREAMER': 'OFF'},  # avoid loading of system FFmpeg libraries via GStreamer libav plugin
                         builder_properties={'modules_filter':'videoio,video,tracking'},
-                        useSlave=['linux-1','linux-2','linux-4'],
+                        useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'],
                         useOpenCL=False, testOpenCL=False)),
                 SetOfBuilders(
                     factory_class=OpenCVBuildFactory,
@@ -452,14 +452,14 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'vulkan'],
                         useName='vulkan', dockerImage='ubuntu-vulkan:16.04',
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
-                        useSlave=['linux-4'], useOpenCL=True, testOpenCL=True,
+                        useSlave=['linux-4', 'linux-6'], useOpenCL=True, testOpenCL=True,
                     )
                 ),
             ] if cvVersion >= 4 else []) + ([
                 SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'cuda'], useName='cuda',
-                    dockerImage='ubuntu-cuda:16.04', useSlave=['linux-4'])),
+                    dockerImage='ubuntu-cuda:16.04', useSlave=['linux-4', 'linux-6'])),
             ] if cvVersion == 3 else []) + ([
                 SetOfBuilders(
                     factory_class=OpenCVBuildFactory,
@@ -485,7 +485,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                 SetOfBuilders(
                     factory_class=ARMv7Factory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'arm'], platform=PLATFORM_DEFAULT,
-                                     useSlave=['linux-1','linux-2','linux-4']
+                                     useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']
                     )
                 ),
                 SetOfBuilders(
@@ -499,7 +499,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     factory_class=AndroidPackFactory,
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                      osType=OSType.ANDROID, is64=True, useName='pack',
-                                     useSlave=['linux-4'],
+                                     useSlave=['linux-4', 'linux-6'],
                     )
                 ),
             ] if branch == '2.4' else []) + [
@@ -579,7 +579,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                     factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['weekly', 'halide', 'skl', 'opencl'],
                         useName='halide', dockerImage='halide:16.04',
-                        useSlave=['linux-1','linux-2','linux-4'],
+                        useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6'],
                         builder_properties={'modules_filter':'dnn,python2,python3,java', 'parallel_tests': 1},
                         useOpenCL=True, testOpenCL=True)
                 ),
@@ -620,26 +620,26 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         factory_class=factory_docs.Docs_factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'docs'], platform=PLATFORM_DEFAULT,
                                          osType=OSType.LINUX,
-                                         useSlave=['linux-1','linux-2','linux-4']
+                                         useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']
                         )
                     ),
                     SetOfBuilders(
                         factory_class=ARMv7Factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT,
-                                         useSlave=['linux-1','linux-2','linux-4']
+                                         useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']
                         )
                     ),
                     SetOfBuilders(
                         factory_class=ARMv8Factory,
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'arm'], platform=PLATFORM_DEFAULT,
-                                         useSlave=['linux-1','linux-2','linux-4']
+                                         useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']
                         )
                     ),
                 ] + ([
                     SetOfBuilders(
                         factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                         init_params=dict(isContrib=True, branch=branch, tags=['nightly', 'cuda'], useName='cuda', dockerImage='ubuntu-cuda:18.04',
-                                         useSlave=['linux-4'])
+                                         useSlave=['linux-4', 'linux-6'])
                     ),
                 ] if cvVersion >= 4 else [])
             )
@@ -653,7 +653,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         factory_class=AndroidPackFactory,
                         init_params=dict(isContrib=True, branch=branch, tags=['weekly', 'android_pack'], platform=PLATFORM_DEFAULT,
                                          osType=OSType.ANDROID, is64=True, useName='pack-contrib',
-                                         useSlave=['linux-4'],
+                                         useSlave=['linux-4', 'linux-6'],
                         )
                     ),
                     SetOfBuilders(
@@ -863,13 +863,13 @@ addConfiguration(
             OCLMacPrecommit(builderName='precommit_opencl_macosx'),
             iOSPrecommit(builderName='precommit_ios', tags=['ios_pack']),
             AndroidPrecommit(builderName='precommit_android',
-                    useSlave=['linux-4'],
-                    builder_properties={'buildworker':'linux-4'}),
-            ARMv7Precommit(builderName='precommit_armv7', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
-            ARMv8Precommit(builderName='precommit_armv8', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
-            DocsPrecommit(builderName='precommit_docs', tags=['docs'], useSlave=['linux-1','linux-2','linux-4']),
+                    useSlave=['linux-4', 'linux-6'],
+                    builder_properties={'buildworker':'linux-4,linux-6'}),
+            ARMv7Precommit(builderName='precommit_armv7', tags=['arm'], useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']),
+            ARMv8Precommit(builderName='precommit_armv8', tags=['arm'], useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']),
+            DocsPrecommit(builderName='precommit_docs', tags=['docs'], useSlave=['linux-1',  'linux-2', 'linux-3', 'linux-4', 'linux-5', 'linux-6']),
             precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory))(builderName='precommit_pack_android', buildWithContrib=False, tags=['android_pack'],
-                    useSlave=['linux-4'],
+                    useSlave=['linux-4', 'linux-6'],
             ),
             precommit(platform(PLATFORM_ANY)(LinuxPrecommitFactory))(builderName='precommit_custom_linux',
                     useIPP=None, buildImage='is_not_set_but_required'
@@ -919,13 +919,13 @@ addConfiguration(
             contrib(OCLMacPrecommit)(builderName='precommit-contrib_opencl_macosx'),
             contrib(iOSPrecommit)(builderName='precommit-contrib_ios', tags=['ios_pack']),
             contrib(AndroidPrecommit)(builderName='precommit-contrib_android',
-                    useSlave=['linux-4'],
+                    useSlave=['linux-4', 'linux-6'],
             ),
-            contrib(ARMv7Precommit)(builderName='precommit-contrib_armv7', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
-            contrib(ARMv8Precommit)(builderName='precommit-contrib_armv8', tags=['arm'], useSlave=['linux-1','linux-2','linux-4']),
-            contrib(DocsPrecommit)(builderName='precommit-contrib_docs', tags=['docs'], useSlave=['linux-1','linux-2','linux-4']),
+            contrib(ARMv7Precommit)(builderName='precommit-contrib_armv7', tags=['arm'], useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']),
+            contrib(ARMv8Precommit)(builderName='precommit-contrib_armv8', tags=['arm'], useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']),
+            contrib(DocsPrecommit)(builderName='precommit-contrib_docs', tags=['docs'], useSlave=['linux-1', 'linux-2', 'linux-4', 'linux-6']),
             contrib(precommit(platform(PLATFORM_DEFAULT)(AndroidPackFactory)))(builderName='precommit-contrib_pack_android', tags=['android_pack'],
-                    useSlave=['linux-4'],
+                    useSlave=['linux-4', 'linux-6'],
             ),
             contrib(LinuxPrecommit)(builderName='precommit-contrib_custom_linux64', buildImage='is_not_set_but_required'),
         ]
