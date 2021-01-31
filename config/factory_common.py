@@ -191,6 +191,14 @@ class CommonFactory(BuilderNewStyle):
             if self.useSlave == []:
                 self.useSlave = None
 
+        if self.branch == '2.4' and self.useSlave is not None:
+            if 'linux-3' in self.useSlave:
+                self.useSlave.remove('linux-3')
+            if 'linux-5' in self.useSlave:
+                self.useSlave.remove('linux-5')
+            if 'linux-6' in self.useSlave:
+                self.useSlave.remove('linux-6')
+
         if self.isPrecommit:
             self.env['BUILD_PRECOMMIT'] = '1'
         elif self.isDebug:
