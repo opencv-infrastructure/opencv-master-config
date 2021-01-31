@@ -7,7 +7,7 @@ virtualenv --system-site-packages /env
 
 set -x
 
-pip install -U pip wheel 'setuptools<45' six
+pip install -U 'pip<21' wheel 'setuptools<45' six
 
 cat > /tmp/requirements.txt <<EOF
 pyOpenSSL

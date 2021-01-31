@@ -10,7 +10,7 @@ set -x
 if [ ! -f /env/bin/activate ]; then
   virtualenv --system-site-packages /env
   . /env/bin/activate
-  pip install -U pip wheel 'setuptools<45' six
+  pip install -U 'pip<21' wheel 'setuptools<45' six
   pip install pyOpenSSL
   pip install sqlalchemy==0.7.10
   pip install sqlalchemy-migrate==0.7.2
