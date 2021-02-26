@@ -210,15 +210,19 @@ for branch in ['2.4', '3.4', 'master', 'next']:
     genNightly = True
     if branch == 'master':
         nightlyMinute = 0
+        dayOfWeek=6
         cvVersion = 4
     if branch == 'next':
         nightlyMinute = 10
+        dayOfWeek=6
         cvVersion = 5
     if branch == '3.4':
         nightlyMinute = 5
+        dayOfWeek=5
         cvVersion = 3
     if branch == '2.4':
         nightlyMinute = 10
+        dayOfWeek=5
         genNightly = False
         cvVersion = 2
     addConfiguration(
@@ -476,7 +480,7 @@ for branch in ['2.4', '3.4', 'master', 'next']:
     addConfiguration(
         SetOfBuildersWithSchedulers(
             branch=branch, nameprefix='weekly-',
-            genForce=True, genNightly=genNightly, nightlyHour=5, nightlyMinute=nightlyMinute, dayOfWeek=5,
+            genForce=True, genNightly=genNightly, nightlyHour=4, nightlyMinute=nightlyMinute, dayOfWeek=dayOfWeek,
             builders=([
                 SetOfBuilders(
                     factory_class=iOSFactory,
@@ -512,31 +516,9 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                 ),
             ] + ([
                 SetOfBuilders(
-                    factory_class=ValgrindFactory,
-                    init_params=dict(branch=branch, tags=['weekly', 'valgrind'], platform=PLATFORM_DEFAULT,
-                                     osType=OSType.LINUX, isDebug=True, useName='valgrind', isContrib=True,
-                                     useSlave=['linux-2']
-                    )
-                ),
-                SetOfBuilders(
-                    factory_class=CoverageFactory,
-                    init_params=dict(isContrib=True, branch=branch, tags=['weekly', 'coverage', 'contrib'], platform=PLATFORM_DEFAULT,
-                                     osType=OSType.LINUX, isDebug=True, useName='coverage',
-                                     useSlave=['linux-1']
-                    )
-                ),
-                SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
                     init_params=dict(
                         branch=branch, buildWithContrib=False, tags=['weekly', 'etc'],
-                        useName='etc-simd-emulator', buildImage='simd-emulator',
-                        useSlave=['linux-1']
-                    )
-                ),
-                SetOfBuilders(
-                    factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
-                    init_params=dict(
-                        branch=branch, isContrib=True, tags=['weekly', 'etc', 'contrib'],
                         useName='etc-simd-emulator', buildImage='simd-emulator',
                         useSlave=['linux-1']
                     )
@@ -647,18 +629,45 @@ for branch in ['2.4', '3.4', 'master', 'next']:
         addConfiguration(
             SetOfBuildersWithSchedulers(
                 branch=branch, nameprefix='weekly-contrib-',
-                genForce=True, genNightly=genNightly, nightlyHour=3, nightlyMinute=nightlyMinute, dayOfWeek=6,
+                genForce=True, genNightly=genNightly, nightlyHour=4, nightlyMinute=20 + nightlyMinute, dayOfWeek=dayOfWeek,
                 builders=([
                     SetOfBuilders(
+                        factory_class=ValgrindFactory,
+                        init_params=dict(
+                            branch=branch, isContrib=True, tags=['weekly', 'valgrind', 'contrib'], platform=PLATFORM_DEFAULT,
+                            osType=OSType.LINUX, isDebug=True, useName='valgrind',
+                            useSlave=['linux-2']
+                        )
+                    ),
+                    SetOfBuilders(
+                        factory_class=CoverageFactory,
+                        init_params=dict(
+                            branch=branch, isContrib=True, tags=['weekly', 'coverage', 'contrib'], platform=PLATFORM_DEFAULT,
+                            osType=OSType.LINUX, isDebug=True, useName='coverage',
+                            useSlave=['linux-1']
+                        )
+                    ),
+                    SetOfBuilders(
+                        factory_class=linux(platform(PLATFORM_ANY)(OpenCVBuildFactory)),
+                        init_params=dict(
+                            branch=branch, isContrib=True, tags=['weekly', 'etc', 'contrib'],
+                            useName='etc-simd-emulator', buildImage='simd-emulator',
+                            useSlave=['linux-1']
+                        )
+                    ),
+                    SetOfBuilders(
                         factory_class=AndroidPackFactory,
-                        init_params=dict(isContrib=True, branch=branch, tags=['weekly', 'android_pack'], platform=PLATFORM_DEFAULT,
-                                         osType=OSType.ANDROID, is64=True, useName='pack-contrib',
-                                         useSlave=['linux-4', 'linux-6'],
+                        init_params=dict(
+                            branch=branch, isContrib=True, tags=['weekly', 'android_pack', 'contrib'], platform=PLATFORM_DEFAULT,
+                            osType=OSType.ANDROID, is64=True, useName='pack-contrib',
+                            useSlave=['linux-4', 'linux-6'],
                         )
                     ),
                     SetOfBuilders(
                         factory_class=iOSFactory,
-                        init_params=dict(isContrib=True, branch=branch, tags=['weekly', 'ios_pack'], platform=PLATFORM_DEFAULT)
+                        init_params=dict(
+                            branch=branch, isContrib=True, tags=['weekly', 'ios_pack'], platform=PLATFORM_DEFAULT
+                        )
                     ),
                 ])
             )
