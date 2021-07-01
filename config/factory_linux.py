@@ -139,6 +139,7 @@ class AbiCompareCommand(ShellCommand):
             # 4.5.2
             "|_ZN7cvflann7anyimpl14big_any_policy.*" + \
             "|_ZN7cvflann7anyimpl21typed_base_any_policy.*" + \
+            "|_ZaSPN5CvMat24anon.*" + \
             ""
         ])
         if branchVersionMajor(builder) >= 5:
