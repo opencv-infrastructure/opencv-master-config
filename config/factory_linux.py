@@ -37,17 +37,17 @@ class AbiFindBaseCommand(SetPropertyFromCommand):
                         print 'ABI: found', fname
                         return {'abi_base_file':'/opt/build-worker/abi/%s' % fname}
             if isBranch34(builder):
-                print 'ABI: fallback to 3.4.13'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.13.abi.tar.gz'}
+                print 'ABI: fallback to 3.4.15'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-3.4.15.abi.tar.gz'}
             else:
-                print 'ABI: fallback to 4.5.1'
-                return {'abi_base_file':'/opt/build-worker/abi/dump-4.5.1.abi.tar.gz'}
+                print 'ABI: fallback to 4.5.3'
+                return {'abi_base_file':'/opt/build-worker/abi/dump-4.5.3.abi.tar.gz'}
         cmd = builder.envCmd + 'ls -1 /opt/build-worker/abi/*.abi.tar.gz'
         SetPropertyFromCommand.__init__(self, workdir='build', command=cmd, extract_fn=extractor, **kwargs)
 
 
     def getCandidates(self):
-        verString = self.getProperty('commit-description', '3.4.13' if isBranch34(self.build) else '4.5.1')
+        verString = self.getProperty('commit-description', '3.4.15' if isBranch34(self.build) else '4.5.3')
         if isinstance(verString, dict):
             verString = verString['opencv']
         candidates = []
@@ -90,6 +90,8 @@ class AbiCompareCommand(ShellCommand):
                 # 3.4.11
                 # 3.4.12
                 # 3.4.13
+                # 3.4.14
+                # 3.4.15
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal", ".*UMatData.*" + \
@@ -137,9 +139,10 @@ class AbiCompareCommand(ShellCommand):
             #"|_ZN2cv3dnn.*" + \
             # 4.5.1
             # 4.5.2
-            "|_ZN7cvflann7anyimpl14big_any_policy.*" + \
-            "|_ZN7cvflann7anyimpl21typed_base_any_policy.*" + \
-            "|_ZaSPN5CvMat24anon.*" + \
+            #"|_ZN7cvflann7anyimpl14big_any_policy.*" + \
+            #"|_ZN7cvflann7anyimpl21typed_base_any_policy.*" + \
+            #"|_ZaSPN5CvMat24anon.*" + \
+            # 4.5.3
             ""
         ])
         if branchVersionMajor(builder) >= 5:
