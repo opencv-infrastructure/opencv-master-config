@@ -25,7 +25,7 @@ from command_test_py import CommandTestPy
 from builder_newstyle import BuilderNewStyle
 
 from build_utils import *
-from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, PLATFORM_SKYLAKE_X
+from constants import PLATFORM_ANY, PLATFORM_DEFAULT, PLATFORM_SKYLAKE, PLATFORM_SKYLAKE_X, PLATFORM_ROCKETLAKE
 
 from buildprops_observer import BuildPropertiesObserver
 
@@ -188,6 +188,9 @@ class CommonFactory(BuilderNewStyle):
                     if self.is64 is None or self.is64:
                         self.useSlave += ['linux-3']
                         self.useSlave += ['linux-5']
+            if self.platform in [PLATFORM_DEFAULT, PLATFORM_ANY, PLATFORM_ROCKETLAKE]:
+                if self.osType == OSType.WINDOWS:
+                    self.useSlave += ['windows-3'] if self.is64 and self.compiler == 'vc16' else []
             if self.useSlave == []:
                 self.useSlave = None
 

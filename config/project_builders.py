@@ -856,6 +856,8 @@ addConfiguration(
                         'master': dict(compiler=WinCompiler.VC16),
                         'next': dict(compiler=WinCompiler.VC16),
                     },
+                    useSlave=['windows-1', 'windows-2', 'windows-3'],
+                    builder_properties={'buildworker': 'windows-1,windows-2'}
             ),
             #OCLPrecommit(builderName='precommit_opencl-vc15', compiler=WinCompiler.VC15),
             WindowsPrecommit32(builderName='precommit_windows32',
@@ -886,7 +888,7 @@ addConfiguration(
             windows(precommitFactory)(builderName='precommit_custom_windows',
                     compiler=WinCompiler.VC15,
                     #cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'},
-                    useSlave=['windows-1', 'windows-2'],
+                    useSlave=['windows-1', 'windows-2', 'windows-3'],
                     builder_properties={'buildworker': 'windows-1'}
             ),
             macosx(precommitFactory)(builderName='precommit_custom_mac',

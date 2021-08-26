@@ -7,6 +7,7 @@ worker = {  # worker passwords are stored in the other place
     'linux-6' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'windows-1' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'windows-2' : { 'max_builds' : 2, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
+    'windows-3' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 8, 'parallel_tests-default' : 4 } },
     'macosx-1' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
     'macosx-2' : { 'max_builds' : 1, 'properties' : { 'CPUs' : 4, 'parallel_tests-default' : 3 } },
 
@@ -17,6 +18,7 @@ PLATFORM_ANY = 'any'
 PLATFORM_DEFAULT = 'default'
 PLATFORM_SKYLAKE = 'skl'
 PLATFORM_SKYLAKE_X = 'skx'  # with AVX512
+PLATFORM_ROCKETLAKE = 'rkl'  # https://en.wikichip.org/wiki/intel/microarchitectures/rocket_lake
 
 # Git mirror repository
 URL_GIT_BASE = r'git://code.ocv/opencv/'
