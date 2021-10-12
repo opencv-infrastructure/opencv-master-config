@@ -415,11 +415,11 @@ class CommonFactory(BuilderNewStyle):
             return int(maxtime_prop)
 
         if self.isPrecommit:
-            return 40 * 60
+            return 90 * 60
         elif isPerf:
-            return 120 * 60
+            return 180 * 60
         else:
-            return 60 * 60
+            return 120 * 60
 
     def getTestTimeout(self):
         ''' timeout for test execution without output, seconds '''
