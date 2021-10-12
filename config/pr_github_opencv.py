@@ -72,7 +72,13 @@ class GitHubContext(pullrequest.context.Context):
             defer.returnValue(None)
         elif self.client.status == 200:
             prs = []
+            #print("Fetched PRs: " + str(len(gh_pullrequests)) + " ETag=" + str(self.client.ETag))
             for gh_pullrequest in gh_pullrequests:
+                # FIXIT: workaround GitHub bug 2021-10-07
+                #print("Fetched PR: " + str(gh_pullrequest['number']) + " SHA=" + str( gh_pullrequest['head']['sha']))
+                #if str(gh_pullrequest['number']) in ['3006', '20825']:
+                #    print('!!! ERROR: Reject malformed GitHub answer !!!')
+                #    defer.returnValue(None)
                 try:
                     pr = {}
                     pr['id'] = gh_pullrequest['number']
