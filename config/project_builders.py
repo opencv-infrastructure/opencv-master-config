@@ -385,6 +385,15 @@ for branch in ['2.4', '3.4', 'master', 'next']:
                         cmake_parameters={'CPU_BASELINE': 'AVX512_SKX', 'CPU_DISPATCH': ''},
                         useIPP=False, useOpenCL=True, testOpenCL=True)),
                 SetOfBuilders(
+                    factory_class=OpenCVBuildFactory,
+                    init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'windows', 'avx512'],
+                        osType=OSType.WINDOWS, platform=PLATFORM_DEFAULT,
+                        useName='opt-avx512', buildImage='msvs2019', is64=True, compiler=WinCompiler.VC16,
+                        cmake_parameters={'CPU_BASELINE': 'AVX512_SKX', 'CPU_DISPATCH': ''},
+                        useIPP=False, useOpenCL=True, testOpenCL=True,
+                        useSlave=['windows-3']
+                    )),
+                SetOfBuilders(
                     factory_class=linux(platform(PLATFORM_SKYLAKE)(OpenCVBuildFactory)),
                     init_params=dict(branch=branch, buildWithContrib=False, tags=['nightly', 'skl', 'ubuntu18', 'avx2', 'clang', 'ninja'],
                         useName='opt-avx2', compiler='clang', dockerImage='ubuntu-clang:18.04', cmake_generator='Ninja',
