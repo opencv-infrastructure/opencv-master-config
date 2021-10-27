@@ -321,8 +321,11 @@ class CommonFactory(BuilderNewStyle):
         ci_build_compiler_prop = self.getProperty('ci-build_compiler', default=None)
         if ci_build_compiler_prop:
             self.compiler = str(ci_build_compiler_prop)
+        ci_build_cmake_generator = self.getProperty('ci-build_cmake_generator', default=None)
+        if ci_build_cmake_generator:
+            self.cmake_generator = str(ci_build_cmake_generator)
 
-        if self.osType == OSType.WINDOWS and self.compiler is not None:
+        if self.osType == OSType.WINDOWS and self.compiler is not None and not str(self.cmake_generator or '').startswith('Ninja'):
             cmake_options = WinCompiler.getCMakeOptions(self.compiler, platform, self.is64)
             if self.cmake_generator is None and cmake_options[0]:
                 self.cmake_generator = cmake_options[0]
@@ -715,10 +718,11 @@ class CommonFactory(BuilderNewStyle):
             command = self.envCmdList + ['cmake']
             if self.cmake_generator:
                 command += ['-G', self.cmake_generator]
-            if self.cmake_toolset:
-                command += ['-T', self.cmake_toolset[1]]
-            if self.cmake_platform:
-                command += ['-A', self.cmake_platform[1]]
+                if not self.cmake_generator.startswith('Ninja'):
+                    if self.cmake_toolset:
+                        command += ['-T', self.cmake_toolset[1]]
+                    if self.cmake_platform:
+                        command += ['-A', self.cmake_platform[1]]
             command += cmakepars
             command += [cmakedir]
             defer.returnValue(command)
@@ -746,8 +750,12 @@ class CommonFactory(BuilderNewStyle):
                 cpus = props.getProperty('CPUs')
                 if not cpus:
                     cpus = 1
-                if self.osType == OSType.WINDOWS or (self.compiler and self.compiler.startswith('vc')):
+                if self.cmake_generator and self.cmake_generator.startswith('Ninja'):
+                    command += ['--', '-j%s' % cpus, '-v']
+                elif self.osType == OSType.WINDOWS or (self.compiler and self.compiler.startswith('vc')):
                     command += ['--', '/maxcpucount:%s' % cpus, '/consoleloggerparameters:NoSummary']
+                    if self.compiler in ['vc16', 'vc17']:
+                        command += ['/v:n']
                 else:
                     command += ['--', '-j%s' % cpus]
             return command
