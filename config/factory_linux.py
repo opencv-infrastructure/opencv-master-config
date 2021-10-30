@@ -93,6 +93,8 @@ class AbiCompareCommand(ShellCommand):
                 # 3.4.14
                 # 3.4.15
                 # 3.4.16
+                #   PR #20980
+                "|cvGetWindowImageRect" + \
                 ""
         ] if isBranch34(builder) else [
             "-skip-internal", ".*UMatData.*" + \
@@ -145,6 +147,8 @@ class AbiCompareCommand(ShellCommand):
             #"|_ZaSPN5CvMat24anon.*" + \
             # 4.5.3
             # 4.5.4
+            #   PR #20982
+            "|cvGetWindowImageRect" + \
             ""
         ])
         if branchVersionMajor(builder) >= 5:
