@@ -48,6 +48,8 @@ codebase['master'] = CodeBase('master')
 codebase['next'] = CodeBase('next')
 codebase['2.4'] = CodeBase('2.4')
 codebase['3.4'] = CodeBase('3.4')
+codebase['4.x'] = CodeBase('4.x')
+codebase['5.x'] = CodeBase('5.x')
 codebase['branch'] = CodeBase('master')
 
 import re

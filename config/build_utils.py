@@ -106,7 +106,8 @@ def isBranch34(self):
     return self.getProperty('branch', default='master').startswith("3.4")
 
 def isBranch4x(self):
-    return self.getProperty('branch', default='master').startswith("master")
+    branch = self.getProperty('branch', default='master')
+    return branch.startswith("4.") or branch.startswith("master")
 
 def branchVersionMajor(self):
     if isBranch24(self):

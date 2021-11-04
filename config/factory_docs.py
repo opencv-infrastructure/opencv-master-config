@@ -61,6 +61,8 @@ class Docs_factory(BaseFactory):
             return False
         targetBranchesWithContrib = [
             '3.4',
+            '4.x',
+            '5.x',
             'master',
             'next'
         ]

@@ -76,8 +76,10 @@ def getResultFileNameRenderer(testPrefix, test, testSuffix, fileSuffix='xml'):
 
 validBranches = [
     '3.4',
-    'master',
-    'next',
+    '4.x',
+    '5.x',
+    #'master',  # do not build agains shadow branches
+    #'next',  # do not build agains shadow branches
 ]
 
 

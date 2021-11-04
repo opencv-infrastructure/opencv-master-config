@@ -177,13 +177,16 @@ class GitHubContext(pullrequest.context.Context):
     def isBadBranch(self, pr):
         if pr.branch in [
             '2.4',  # EOL in 2020
+            'master',  # shadow branch
+            'next',  # shadow branch
         ]:
             return True
         if pr.head_branch in [
-            'master',
             '2.4',
             '3.4',
             '4.x',
+            '5.x',
+            'master',
             'next',
         ]:
             return True
@@ -197,8 +200,8 @@ class GitHubContext(pullrequest.context.Context):
 
     def applyBuildCommonOptions(self, pr, b, properties, sourcestamps):
         properties.setProperty('branch', pr.branch, 'Pull request')
-        if str(pr.prid) == '18279':  # FIXIT: remove this
-            properties.setProperty('branch', 'next', 'Pull request (next)')
+        #if str(pr.prid) == 'XYZ':  # FIXIT: disable this after new branch creation
+        #    properties.setProperty('branch', '6.x', 'Pull request (6.x)')
         properties.setProperty('head_sha', pr.head_sha, 'Pull request')
         properties.setProperty('pullrequest', pr.prid, 'Pull request')
         if b.isPerf:

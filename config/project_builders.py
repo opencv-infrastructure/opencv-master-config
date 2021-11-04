@@ -208,11 +208,11 @@ def addConfiguration(descriptor):
 # Nightly builders
 for branch in ['2.4', '3.4', 'master', 'next']:
     genNightly = True
-    if branch == 'master':
+    if branch == '4.x' or branch == 'master':
         nightlyMinute = 0
         dayOfWeek=6
         cvVersion = 4
-    if branch == 'next':
+    if branch == '5.x' or branch == 'next':
         nightlyMinute = 10
         dayOfWeek=6
         cvVersion = 5
@@ -815,7 +815,13 @@ addConfiguration(
     SetOfBuildersWithSchedulers(branch='branch', nameprefix='precommit-',
         genForce=True, genNightly=False,
         builders=[
-            LinuxPrecommit(builderName='precommit_linux64', run_abi_check=True),
+            LinuxPrecommit(builderName='precommit_linux64', run_abi_check=True,
+                    branchExtraConfiguration={
+                        '3.4': dict(buildImage='ubuntu:14.04'),
+                        '4.x': dict(buildImage='ubuntu:16.04'),
+                        '5.x': dict(buildImage='ubuntu:18.04'),
+                    },
+            ),
             linux32(LinuxPrecommit)(builderName='precommit_linux32', buildWithContrib=False),
             #LinuxPrecommit(builderName='precommit_linux64-icc', buildImage='ubuntu-icc:16.04'),
             OCLLinuxPrecommit(builderName='precommit_opencl_linux',
@@ -826,8 +832,8 @@ addConfiguration(
                     },
                     branchExtraConfiguration={
                         '3.4': dict(buildImage='ubuntu:16.04'),
-                        'master': dict(buildImage='ubuntu:16.04'),
-                        'next': dict(buildImage='ubuntu:20.04'),
+                        '4.x': dict(buildImage='ubuntu:16.04'),
+                        '5.x': dict(buildImage='ubuntu:20.04'),
                     },
             ),
             OCLLinuxPrecommit(builderName='precommit_linux64-avx2',
@@ -837,8 +843,8 @@ addConfiguration(
                     builder_properties={'buildworker':'linux-1,linux-2'},
                     branchExtraConfiguration={
                         '3.4': dict(buildImage='ubuntu:18.04'),
-                        'master': dict(buildImage='ubuntu:18.04'),
-                        'next': dict(buildImage='ubuntu:20.04'),
+                        '4.x': dict(buildImage='ubuntu:18.04'),
+                        '5.x': dict(buildImage='ubuntu:20.04'),
                     },
             ),
             LinuxPrecommitNoOpt(builderName='precommit_linux64_no_opt',
@@ -846,8 +852,8 @@ addConfiguration(
                     #builder_properties={'buildworker':'linux-3,linux-5'},
                     branchExtraConfiguration={
                         '3.4': dict(buildImage='ubuntu:16.04'),
-                        'master': dict(buildImage='ubuntu:16.04'),
-                        'next': dict(buildImage='ubuntu:20.04'),
+                        '4.x': dict(buildImage='ubuntu:16.04'),
+                        '5.x': dict(buildImage='ubuntu:20.04'),
                     },
             ),
             #WindowsPrecommit64(builderName='precommit_windows64-vc15', compiler=WinCompiler.VC15, cmake_parameters={'OPENCV_EXTRA_CXX_FLAGS': '/std:c++latest', 'WITH_OPENEXR': 'OFF'}),
@@ -862,8 +868,8 @@ addConfiguration(
                     },
                     branchExtraConfiguration={
                         '3.4': dict(compiler=WinCompiler.VC14),
-                        'master': dict(compiler=WinCompiler.VC16),
-                        'next': dict(compiler=WinCompiler.VC16),
+                        '4.x': dict(compiler=WinCompiler.VC16),
+                        '5.x': dict(compiler=WinCompiler.VC16),
                     },
                     useSlave=['windows-1', 'windows-2', 'windows-3'],
                     builder_properties={'buildworker': 'windows-1,windows-2'}
@@ -922,16 +928,16 @@ addConfiguration(
                     compiler=WinCompiler.VC14,
                     branchExtraConfiguration={
                         '3.4': dict(compiler=WinCompiler.VC14),
-                        'master': dict(compiler=WinCompiler.VC14),
-                        'next': dict(compiler=WinCompiler.VC16),
+                        '4.x': dict(compiler=WinCompiler.VC14),
+                        '5.x': dict(compiler=WinCompiler.VC16),
                     },
             ),
             #contrib(WindowsPrecommit64)(builderName='precommit-contrib_windows64-icc', cmake_toolset=INTEL_COMPILER_TOOLSET_CURRENT),
             contrib(OCLPrecommit)(builderName='precommit-contrib_opencl',
                     branchExtraConfiguration={
                         '3.4': dict(compiler=WinCompiler.VC14),
-                        'master': dict(compiler=WinCompiler.VC14),
-                        'next': dict(compiler=WinCompiler.VC16),
+                        '4.x': dict(compiler=WinCompiler.VC14),
+                        '5.x': dict(compiler=WinCompiler.VC16),
                     },
             ),
             contrib(WindowsPrecommit32)(builderName='precommit-contrib_windows32'),
